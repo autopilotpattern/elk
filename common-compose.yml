@@ -1,0 +1,90 @@
+# ELK stack designed for container-native deployment
+# on Joyent's Triton platform.
+
+# TODOs:
+# - configure Nginx on start w/ updated triton-nginx
+# - add a log-generating client w/ logstash
+
+# ---------------------------------------------------
+# The Kibana application queries the ES cluster
+
+kibana:
+    image: 0x74696d/triton-kibana:latest
+    mem_limit: 1g
+    restart: always
+    ports:
+    - 5601 # default Kibana port
+    environment:
+    - CONFIG_PATH=/usr/share/kibana/src/config/kibana.yml
+    - NODE_ENV=production
+    - CONTAINERBUDDY=file:///etc/containerbuddy.json
+    command: >
+      /opt/containerbuddy/containerbuddy
+      /usr/share/kibana/node/bin/node
+      /usr/share/kibana/src/bin/kibana.js
+
+# ---------------------------------------------------
+# Nginx load balances kibana instances
+
+nginx:
+    image: 0x74696d/triton-nginx
+    mem_limit: 512m
+    ports:
+    - 80
+    restart: always
+    environment:
+    - CONTAINERBUDDY
+    command: >
+      /opt/containerbuddy/containerbuddy
+      nginx -g "daemon off;"
+
+# ---------------------------------------------------
+# This common service acts as a template for master-only, data-only, and
+# master+data ES services defined in the docker-compose.yml file.
+
+elasticsearch:
+    image: 0x74696d/triton-elasticsearch:latest
+    mem_limit: 4g
+    restart: always
+
+    environment:
+    - CLUSTER_NAME=elasticsearch
+    - ES_HEAP_SIZE=1g # set to 50% of mem_limit, but no more than 31g
+    - ES_NODE_MASTER=true # default
+    - ES_NODE_DATA=true   # default
+    - CONTAINERBUDDY=file:///etc/containerbuddy.json
+    # ES_HEAP_NEWSIZE # optional override
+    # ES_DIRECT_SIZE  # optional override
+    # ES_JAVA_OPTS    # optional override
+
+    # Normally on Triton we won't expose these unless we want to have ES exposed
+    # to the Internet. Each container gets a private IP for internal use.
+    # ports:
+    # - 9200 # REST API
+    # - 9300 # transport API
+
+    command: >
+      /opt/containerbuddy/containerbuddy
+      /usr/share/elasticsearch/bin/elasticsearch
+      --default.config=/etc/elasticsearch/default.yml
+      --default.path.conf=/etc/elasticsearch
+
+# ---------------------------------------------------
+# Consul as a service discovery tier
+
+consul:
+    image: progrium/consul:latest
+    command: -server -bootstrap -ui-dir /ui
+    restart: always
+    mem_limit: 128m
+    ports:
+        - 8500
+    expose:
+        - 53
+        - 8300
+        - 8301
+        - 8302
+        - 8400
+        - 8500
+    dns:
+       - 127.0.0.1

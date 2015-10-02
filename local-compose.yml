@@ -1,0 +1,40 @@
+# Local testing version of ELK stack designed for container-native
+# deployment on Joyent's Triton platform.
+
+kibana:
+    extends:
+      file: common-compose.yml
+      service: kibana
+    mem_limit: 128m
+    build: kibana/
+    links:
+    - consul:consul
+
+elasticsearch_master:
+    extends:
+      file: common-compose.yml
+      service: elasticsearch
+    mem_limit: 512m
+    environment:
+    - ES_NODE_MASTER=true
+    - ES_NODE_DATA=false
+    - CONTAINERBUDDY=file:///etc/containerbuddy-master.json
+    links:
+    - consul:consul
+    ports:
+    - 9200:9200 # REST API
+
+elasticsearch:
+    extends:
+      file: common-compose.yml
+      service: elasticsearch
+    mem_limit: 512m
+    links:
+    - consul:consul
+
+consul:
+    extends:
+      file: common-compose.yml
+      service: consul
+    ports:
+    - 8500:8500
