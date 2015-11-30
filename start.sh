@@ -5,7 +5,11 @@ set -e -o pipefail
 export COMPOSE_PROJECT_NAME=elk
 source common.sh
 
-docker-compose up -d
+docker-compose up -d \
+               elasticsearch \
+               elasticsearch_master \
+               kibana \
+               logstash
 
 # poll Consul for liveness and then open the console
 poll-for-page "http://$(getIpPort consul 8500)/ui/" \
@@ -21,3 +25,8 @@ poll-for-page "http://$(getIpPort elasticsearch_master 9200)/_cluster/health?pre
 poll-for-page "http://$(getIpPort kibana 5601)/app/kibana" \
               'Waiting for Kibana to register as healthy...' \
               'Opening Kibana console.'
+
+echo 'Starting Nginx log source...' && \
+     LOGSTASH=$(getPrivateIpPort logstash 514) \
+     CONTAINERBUDDY="$(cat ./nginx/containerbuddy.json)" \
+     docker-compose up -d nginx

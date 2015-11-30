@@ -40,6 +40,17 @@ getIpPort() {
     echo "$ip:$port"
 }
 
+# get the IP:port of a container's private IP via `docker exec`
+getPrivateIpPort() {
+    local ip=$(docker exec -it ${COMPOSE_PROJECT_NAME}_consul_1 ip addr show eth0 | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}')
+    if [ -z "${COMPOSE_FILE}" ]; then
+        local port=$2
+    else
+        local port=$(docker inspect ${COMPOSE_PROJECT_NAME}_$1_1 | json -a NetworkSettings.Ports."$2/tcp".0.HostPort)
+    fi
+    echo "$ip:$port"
+}
+
 # usage: poll-for-page <url> <pre-message> <post-message>
 poll-for-page() {
     echo "$2"
@@ -67,7 +78,7 @@ done
 shift $(expr $OPTIND - 1 )
 
 # give the docker remote api more time before timeout
-export DOCKER_CLIENT_TIMEOUT=300
+export COMPOSE_HTTP_TIMEOUT=300
 
 cmd=$1
 if [ ! -z "$cmd" ]; then
