@@ -13,6 +13,6 @@ do
 done
 
 # update elasticsearch_url configuration
-REPLACEMENT=$(printf 's/^elasticsearch_url.*$/elasticsearch_url: "http:\/\/%s:9200"/' ${MASTER})
+REPLACEMENT=$(printf 's/^.*elasticsearch\.url.*$/elasticsearch.url: "http:\/\/%s:9200"/' ${MASTER})
 echo ${REPLACEMENT}
-sed -i "${REPLACEMENT}" /usr/share/kibana/src/config/kibana.yml
+sed -i "${REPLACEMENT}" /usr/share/kibana/config/kibana.yml

@@ -15,13 +15,13 @@ kibana:
     ports:
     - 5601 # default Kibana port
     environment:
-    - CONFIG_PATH=/usr/share/kibana/src/config/kibana.yml
+    - CONFIG_PATH=/usr/share/kibana/config/kibana.yml
     - NODE_ENV=production
     - CONTAINERBUDDY=file:///etc/containerbuddy.json
     command: >
       /opt/containerbuddy/containerbuddy
       /usr/share/kibana/node/bin/node
-      /usr/share/kibana/src/bin/kibana.js
+      /usr/share/kibana/src/cli
 
 # ---------------------------------------------------
 # Nginx load balances kibana instances
@@ -53,9 +53,11 @@ elasticsearch:
     - ES_NODE_MASTER=true # default
     - ES_NODE_DATA=true   # default
     - CONTAINERBUDDY=file:///etc/containerbuddy.json
+    # set the number of threads we want based on the number of CPU shares
+    # that we'll get for this size container on Triton
+    - ES_JAVA_OPTS=-XX:-UseGCTaskAffinity -XX:-BindGCTaskThreadsToCPUs -XX:ParallelGCThreads=1 -XX:ParallelCMSThreads=1
     # ES_HEAP_NEWSIZE # optional override
     # ES_DIRECT_SIZE  # optional override
-    # ES_JAVA_OPTS    # optional override
 
     # Normally on Triton we won't expose these unless we want to have ES exposed
     # to the Internet. Each container gets a private IP for internal use.
@@ -66,7 +68,6 @@ elasticsearch:
     command: >
       /opt/containerbuddy/containerbuddy
       /usr/share/elasticsearch/bin/elasticsearch
-      --default.config=/etc/elasticsearch/default.yml
       --default.path.conf=/etc/elasticsearch
 
 # ---------------------------------------------------

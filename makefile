@@ -10,16 +10,15 @@ build:
 test:
 	-docker-compose -p elk stop || true
 	-docker-compose -p elk rm -f || true
-	docker-compose -p elk -f local-compose.yml up -d
-	open "http://$(shell docker-machine ip default):8500/ui/"
+	docker-compose -p elk -f local-compose.yml build
+	./start.sh -f local-compose.yml
 
 ship:
 	cd kibana && docker build --tag 0x74696d/triton-kibana .
 	docker push 0x74696d/triton-kibana
 
 # run on Triton with 3 ES data nodes and 2 kibana app instances
-# TODO: might need to add script for inject consul data on this instead
 run:
-	docker-compose -p elk up -d
+	./start.sh
 	docker-compose -p elk scale elasticsearch=3
 	docker-compose -p elk scale kibana=2

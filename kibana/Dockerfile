@@ -8,11 +8,11 @@ RUN apt-get update && \
 
 # If we wanted the development version we could pull that instead but we
 # want to run a production environment here
-RUN export PKG=kibana-4.1.2-linux-x64.tar.gz && \
+RUN export PKG=kibana-4.3.0-linux-x64.tar.gz && \
     curl -Lo ${PKG} "https://download.elastic.co/kibana/kibana/${PKG}" && \
     tar -xzf ${PKG} && \
     mkdir -p /usr/share/kibana && \
-    mv kibana-4.1.2-linux-x64/* /usr/share/kibana
+    mv kibana-4.3.0-linux-x64/* /usr/share/kibana
 
 EXPOSE 5601
 
