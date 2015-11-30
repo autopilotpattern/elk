@@ -10,6 +10,7 @@ build:
 test:
 	-docker-compose -p elk stop || true
 	-docker-compose -p elk rm -f || true
+	docker-compose -p elk -f local-compose.yml pull
 	docker-compose -p elk -f local-compose.yml build
 	./start.sh -f local-compose.yml
 

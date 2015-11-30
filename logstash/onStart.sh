@@ -12,7 +12,7 @@ do
     sleep 1.7
 done
 
-# update elasticsearch_url configuration
-REPLACEMENT=$(printf 's/^.*elasticsearch\.url.*$/elasticsearch.url: "http:\/\/%s:9200"/' ${MASTER})
+# update elasticsearch URL configuration
+REPLACEMENT=$(printf 's/^.*hosts => \["elasticsearch"\].*$/  elasticsearch { hosts => ["%s:9200"] }/' ${MASTER})
 echo ${REPLACEMENT}
-sed -i "${REPLACEMENT}" /usr/share/kibana/config/kibana.yml
+sed -i "${REPLACEMENT}" /etc/logstash/conf.d/logstash.conf

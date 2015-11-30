@@ -10,6 +10,15 @@ kibana:
     links:
     - consul:consul
 
+logstash:
+    extends:
+      file: common-compose.yml
+      service: logstash
+    mem_limit: 128m
+    build: logstash/
+    links:
+    - consul:consul
+
 elasticsearch_master:
     extends:
       file: common-compose.yml

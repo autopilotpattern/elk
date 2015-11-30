@@ -1,0 +1,20 @@
+{
+  "consul": "consul:8500",
+  "onStart": "/opt/containerbuddy/onStart.sh",
+  "services": [
+    {
+      "name": "logstash",
+      "port": 5000,
+        "health": "true",
+      "poll": 10,
+      "ttl": 25
+    }
+  ],
+  "backends": [
+    {
+      "name": "elasticsearch",
+      "poll": 5,
+      "onChange": "/opt/containerbuddy/onStart.sh"
+    }
+  ]
+}
