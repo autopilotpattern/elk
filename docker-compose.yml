@@ -24,6 +24,18 @@ logstash:
     - consul:consul # we'll remove this once TCNS goes live
 
 # ---------------------------------------------------
+# Nginx produces logs to be ingested
+
+nginx:
+    extends:
+      file: common-compose.yml
+      service: nginx
+    mem_limit: 128m
+    links:
+    - consul:consul
+    - logstash:logstash
+
+# ---------------------------------------------------
 # The master-only node serves as the coordinator of the cluster only
 
 elasticsearch_master:

@@ -4,8 +4,8 @@
   "services": [
     {
       "name": "logstash",
-      "port": 5000,
-        "health": "true",
+      "port": 514,
+      "health": "true",
       "poll": 10,
       "ttl": 25
     }

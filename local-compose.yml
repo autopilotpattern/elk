@@ -14,10 +14,21 @@ logstash:
     extends:
       file: common-compose.yml
       service: logstash
-    mem_limit: 128m
+    mem_limit: 512m
     build: logstash/
     links:
     - consul:consul
+    ports:
+    - 514:514
+
+nginx:
+    extends:
+      file: common-compose.yml
+      service: nginx
+    mem_limit: 128m
+    links:
+    - consul:consul
+    - logstash:logstash
 
 elasticsearch_master:
     extends:

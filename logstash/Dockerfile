@@ -32,3 +32,5 @@ RUN export CB=containerbuddy-0.0.2-alpha &&\
 COPY containerbuddy.json /etc/containerbuddy.json
 COPY logstash.conf /etc/logstash/conf.d/logstash.conf
 COPY onStart.sh /opt/containerbuddy/onStart.sh
+
+EXPOSE 514
