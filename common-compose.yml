@@ -54,6 +54,7 @@ nginx:
       syslog-address: "tcp://${LOGSTASH}"
     environment:
     - CONTAINERBUDDY
+    - NGINX_CONF
     command: >
       /opt/containerbuddy/containerbuddy
       nginx -g "daemon off;"
