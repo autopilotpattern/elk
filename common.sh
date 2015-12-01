@@ -42,7 +42,7 @@ getIpPort() {
 
 # get the IP:port of a container's private IP via `docker exec`
 getPrivateIpPort() {
-    local ip=$(docker exec -it ${COMPOSE_PROJECT_NAME}_consul_1 ip addr show eth0 | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}')
+    local ip=$(docker exec -it ${COMPOSE_PROJECT_NAME}_$1_1 ip addr show eth0 | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}')
     if [ -z "${COMPOSE_FILE}" ]; then
         local port=$2
     else

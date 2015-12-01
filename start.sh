@@ -26,7 +26,15 @@ poll-for-page "http://$(getIpPort kibana 5601)/app/kibana" \
               'Waiting for Kibana to register as healthy...' \
               'Opening Kibana console.'
 
+# write an initial log entry so that we can use dynamic field mapping
+echo 'Initializing Kibana indexes...'
+nc $(echo $(getIpPort logstash 514) | awk '{split($0,a,":"); print a[1],a[2]}') <<EOF
+echo $(printf '%s localhost kibana: initializing index' "$(date '+%b %d %H:%M:%S')") |
+EOF
+
+
 echo 'Starting Nginx log source...' && \
      LOGSTASH=$(getPrivateIpPort logstash 514) \
      CONTAINERBUDDY="$(cat ./nginx/containerbuddy.json)" \
+     NGINX_CONF="$(cat ./nginx/nginx.ctmpl)" \
      docker-compose up -d nginx
