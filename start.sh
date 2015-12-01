@@ -5,9 +5,6 @@ set -e -o pipefail
 export COMPOSE_PROJECT_NAME=elk
 source common.sh
 
-# suppress docker-compose warnings
-export DOCKER_CLIENT_TIMEOUT=
-
 docker-compose up -d \
                elasticsearch \
                elasticsearch_master \
