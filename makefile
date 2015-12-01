@@ -7,6 +7,7 @@ build:
 	docker-compose -p elk -f local-compose.yml build
 
 # for testing against Docker locally
+test: export LOGSTASH = n/a
 test:
 	-docker-compose -p elk stop || true
 	-docker-compose -p elk rm -f || true
