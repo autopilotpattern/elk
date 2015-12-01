@@ -52,6 +52,7 @@ curl -XPOST -s --fail \
      "http://$(getIpPort elasticsearch_master 9200)/.kibana/config/4.3.0/_update"
 
 # poll Kibana for liveness and then open the page
+echo
 poll-for-page "http://$(getIpPort kibana 5601)/app/kibana#discover" \
               'Waiting for Kibana to register as healthy...' \
               'Opening Kibana console.'

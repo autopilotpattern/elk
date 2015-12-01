@@ -6,7 +6,7 @@
       "name": "nginx",
       "port": 80,
       "publicIp": true,
-      "health": "/usr/bin/curl --fail -s http://localhost/nginx_status",
+      "health": "/usr/bin/curl --fail -s -o /dev/null http://localhost/nginx_status",
       "poll": 10,
       "ttl": 25
     }
