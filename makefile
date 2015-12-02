@@ -46,6 +46,7 @@ local:
 	docker-compose -p elk -f local-compose.yml build
 	./start.sh -f local-compose.yml
 
-# test for test-syslog, test-gelf (or test-fluentd once it works)
-test-local-%:
+# test for local-test-syslog, local-test-gelf
+# (or local-test-fluentd once it works)
+local-test-%:
 	./start.sh -f local-compose.yml test $*

@@ -19,7 +19,6 @@ logstash:
       file: common-compose.yml
       service: logstash
     mem_limit: 128m
-    build: logstash/
     links:
     - consul:consul # we'll remove this once TCNS goes live
 
