@@ -3,17 +3,23 @@ SHELL := /bin/bash
 .SHELLFLAGS := -eu -o pipefail
 .DEFAULT_GOAL := build
 
+PHONY: *
+
 build:
 	docker-compose -p elk -f local-compose.yml build
 
-# for testing against Docker locally
-test: export LOGSTASH = n/a
-test:
+# for running against local Docker environment
+local: export LOGSTASH = n/a
+local:
 	-docker-compose -p elk stop || true
 	-docker-compose -p elk rm -f || true
-	docker-compose -p elk -f local-compose.yml pull
+	#docker-compose -p elk -f local-compose.yml pull
 	docker-compose -p elk -f local-compose.yml build
 	./start.sh -f local-compose.yml
+
+# run test for test-syslog, test-gelf, or test-fluentd
+test-%:
+	./start.sh -f local-compose.yml test $*
 
 ship:
 	cd kibana && docker build --tag 0x74696d/triton-kibana .

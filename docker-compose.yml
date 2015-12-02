@@ -26,14 +26,39 @@ logstash:
 # ---------------------------------------------------
 # Nginx produces logs to be ingested
 
-nginx:
+
+nginx_syslog:
     extends:
       file: common-compose.yml
       service: nginx
     mem_limit: 128m
+    log_driver: syslog
+    log_opt:
+      syslog-address: "tcp://${LOGSTASH}"
     links:
     - consul:consul
-    - logstash:logstash
+
+nginx_gelf:
+    extends:
+      file: common-compose.yml
+      service: nginx
+    mem_limit: 128m
+    log_driver: gelf
+    log_opt:
+      gelf-address: "udp://${LOGSTASH}"
+    links:
+    - consul:consul
+
+nginx_fluentd:
+    extends:
+      file: common-compose.yml
+      service: nginx
+    mem_limit: 128m
+    log_driver: fluentd
+    log_opt:
+      fluentd-address: "tcp://${LOGSTASH}"
+    links:
+    - consul:consul
 
 # ---------------------------------------------------
 # The master-only node serves as the coordinator of the cluster only

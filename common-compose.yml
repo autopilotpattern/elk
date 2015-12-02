@@ -1,10 +1,6 @@
 # ELK stack designed for container-native deployment
 # on Joyent's Triton platform.
 
-# TODOs:
-# - configure Nginx on start w/ updated triton-nginx
-# - add a log-generating client w/ logstash
-
 # ---------------------------------------------------
 # The Kibana application queries the ES cluster
 
@@ -31,8 +27,14 @@ logstash:
     mem_limit: 1g
     restart: always
     ports:
-    - 514      # syslog tcp port
-    - 514/udp  # syslog udp port
+    # because the ports are chosen by the log_driver config
+    # these are fairly arbitrary but we're keeping them at
+    # the typical non-container values for familiarity
+    - "514"       # syslog tcp port
+    - "514/udp"   # syslog udp port
+    - "24224"     # fluentd tcp port
+    - "12201"     # gelf
+    - "12201/udp" # gelf udp port
     environment:
     - CONTAINERBUDDY=file:///etc/containerbuddy.json
     command: >
@@ -40,7 +42,8 @@ logstash:
       /opt/logstash/bin/logstash -f /etc/logstash/conf.d/logstash.conf
 
 # ---------------------------------------------------
-# Nginx produces logs to be ingested
+# Nginx produces logs to be ingested from various log drivers.
+# Override log_driver and log_opts in extending compose files
 
 nginx:
     image: 0x74696d/triton-nginx
@@ -48,16 +51,13 @@ nginx:
     ports:
     - 80
     restart: always
-    log_driver: syslog
-    log_opt:
-      # requires docker-compose 1.5+
-      syslog-address: "tcp://${LOGSTASH}"
     environment:
     - CONTAINERBUDDY
     - NGINX_CONF
     command: >
       /opt/containerbuddy/containerbuddy
       nginx -g "daemon off;"
+
 
 # ---------------------------------------------------
 # This common service acts as a template for master-only, data-only, and

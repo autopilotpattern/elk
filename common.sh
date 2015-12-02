@@ -32,23 +32,32 @@ prep() {
 getIpPort() {
     if [ -z "${COMPOSE_FILE}" ]; then
         local ip=$(sdc-listmachines --name ${COMPOSE_PROJECT_NAME}_$1_1 | json -a ips.1)
-        local port=$2
     else
         local ip=$(docker-machine ip default)
-        local port=$(docker inspect ${COMPOSE_PROJECT_NAME}_$1_1 | json -a NetworkSettings.Ports."$2/tcp".0.HostPort)
     fi
+    local port=$(getPort $1 $2 $3)
     echo "$ip:$port"
 }
 
 # get the IP:port of a container's private IP via `docker exec`
 getPrivateIpPort() {
     local ip=$(docker exec -it ${COMPOSE_PROJECT_NAME}_$1_1 ip addr show eth0 | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}')
+    local port=$(getPort $1 $2 $3)
+    echo "$ip:$port"
+}
+
+# get the mapped port number for a given container's port and protocol
+getPort() {
+    local protocol=$3
+    if [ -z $protocol ]; then
+        protocol='tcp'
+    fi
     if [ -z "${COMPOSE_FILE}" ]; then
         local port=$2
     else
-        local port=$(docker inspect ${COMPOSE_PROJECT_NAME}_$1_1 | json -a NetworkSettings.Ports."$2/tcp".0.HostPort)
+        local port=$(docker inspect ${COMPOSE_PROJECT_NAME}_$1_1 | json -a NetworkSettings.Ports."$2/$protocol" | json -a HostPort | sort -nb | head -1)
     fi
-    echo "$ip:$port"
+    echo $port
 }
 
 # usage: poll-for-page <url> <pre-message> <post-message>
@@ -79,13 +88,3 @@ shift $(expr $OPTIND - 1 )
 
 # give the docker remote api more time before timeout
 export COMPOSE_HTTP_TIMEOUT=300
-
-cmd=$1
-if [ ! -z "$cmd" ]; then
-    shift 1
-    $cmd "$@"
-    exit
-fi
-
-check
-prep

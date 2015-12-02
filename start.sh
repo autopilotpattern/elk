@@ -5,6 +5,10 @@ set -e -o pipefail
 export COMPOSE_PROJECT_NAME=elk
 source common.sh
 
+# ---------------------------------------------------
+# Main test setup
+
+run() {
 docker-compose up -d \
                elasticsearch \
                elasticsearch_master \
@@ -58,15 +62,47 @@ poll-for-page "http://$(getIpPort kibana 5601)/app/kibana#discover" \
               'Opening Kibana console.'
 
 
+} # end main test setup
+
+
 # ---------------------------------------------------
-# Test client
+# Test clients
 
-echo 'Starting Nginx log source...' && \
-     LOGSTASH=$(getPrivateIpPort logstash 514) \
-     CONTAINERBUDDY="$(cat ./nginx/containerbuddy.json)" \
-     NGINX_CONF="$(cat ./nginx/nginx.conf)" \
-     docker-compose up -d nginx
+test() {
+    local logtype=$1
+    local port
+    local protocol=tcp
+    case $logtype in
+        fluentd)
+            port=24224 ;;
+        gelf)
+            port=12201
+            protocol=udp
+            ;;
+        syslog)
+            port=514 ;;
+        *)
+            port=514 ;;
+    esac
 
-poll-for-page "http://$(getIpPort nginx 80)" \
-              'Waiting for Nginx to register as healthy...' \
-              'Opening web page.'
+    echo 'Starting Nginx log source...' && \
+        LOGSTASH=$(getPrivateIpPort logstash $port $protocol) \
+        CONTAINERBUDDY="$(cat ./nginx/containerbuddy.json)" \
+        NGINX_CONF="$(cat ./nginx/nginx.conf)" \
+        docker-compose up -d nginx_$logtype
+
+    poll-for-page "http://$(getIpPort nginx_$logtype 80)" \
+                  'Waiting for Nginx to register as healthy...' \
+                  'Opening web page.'
+}
+
+cmd=$1
+if [ ! -z "$cmd" ]; then
+    shift 1
+    $cmd "$@"
+    exit
+fi
+
+check
+prep
+run

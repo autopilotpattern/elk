@@ -19,16 +19,43 @@ logstash:
     links:
     - consul:consul
     ports:
-    - 514:514
+    - "514:514"             # syslog tcp port
+    - "514/udp:514/udp"     # syslog udp port
+    - "24224:24224"         # fluentd tcp port
+    - "12201/udp:12201/udp" # gelf udp port
 
-nginx:
+nginx_syslog:
     extends:
       file: common-compose.yml
       service: nginx
     mem_limit: 128m
+    log_driver: syslog
+    log_opt:
+      syslog-address: "tcp://${LOGSTASH}"
     links:
     - consul:consul
-    - logstash:logstash
+
+nginx_gelf:
+    extends:
+      file: common-compose.yml
+      service: nginx
+    mem_limit: 128m
+    log_driver: gelf
+    log_opt:
+      gelf-address: "udp://${LOGSTASH}"
+    links:
+    - consul:consul
+
+nginx_fluentd:
+    extends:
+      file: common-compose.yml
+      service: nginx
+    mem_limit: 128m
+    log_driver: fluentd
+    log_opt:
+      fluentd-address: "${LOGSTASH}"
+    links:
+    - consul:consul
 
 elasticsearch_master:
     extends:

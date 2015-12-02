@@ -34,3 +34,5 @@ COPY logstash.conf /etc/logstash/conf.d/logstash.conf
 COPY onStart.sh /opt/containerbuddy/onStart.sh
 
 EXPOSE 514
+EXPOSE 12201
+EXPOSE 24224
