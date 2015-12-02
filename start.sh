@@ -73,8 +73,8 @@ test() {
     local port
     local protocol=tcp
     case $logtype in
-        fluentd)
-            port=24224 ;;
+        # fluentd)
+        #    port=24224 ;;
         gelf)
             port=12201
             protocol=udp

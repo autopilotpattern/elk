@@ -32,9 +32,9 @@ logstash:
     # the typical non-container values for familiarity
     - "514"       # syslog tcp port
     - "514/udp"   # syslog udp port
-    - "24224"     # fluentd tcp port
     - "12201"     # gelf
     - "12201/udp" # gelf udp port
+    # - "24224"     # fluentd tcp port
     environment:
     - CONTAINERBUDDY=file:///etc/containerbuddy.json
     command: >

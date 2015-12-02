@@ -49,16 +49,16 @@ nginx_gelf:
     links:
     - consul:consul
 
-nginx_fluentd:
-    extends:
-      file: common-compose.yml
-      service: nginx
-    mem_limit: 128m
-    log_driver: fluentd
-    log_opt:
-      fluentd-address: "tcp://${LOGSTASH}"
-    links:
-    - consul:consul
+# nginx_fluentd:
+#     extends:
+#       file: common-compose.yml
+#       service: nginx
+#     mem_limit: 128m
+#     log_driver: fluentd
+#     log_opt:
+#       fluentd-address: "${LOGSTASH}"
+#     links:
+#     - consul:consul
 
 # ---------------------------------------------------
 # The master-only node serves as the coordinator of the cluster only
