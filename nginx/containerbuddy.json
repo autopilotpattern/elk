@@ -1,0 +1,14 @@
+{
+  "consul": "consul:8500",
+  "onStart": "/opt/containerbuddy/reload.sh",
+  "services": [
+    {
+      "name": "nginx",
+      "port": 80,
+      "publicIp": true,
+      "health": "/usr/bin/curl --fail -s -o /dev/null http://localhost/nginx_status",
+      "poll": 10,
+      "ttl": 25
+    }
+  ]
+}

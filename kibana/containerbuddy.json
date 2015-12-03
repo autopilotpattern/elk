@@ -1,0 +1,20 @@
+{
+  "consul": "consul:8500",
+  "onStart": "/opt/containerbuddy/onStart.sh",
+  "services": [
+    {
+      "name": "kibana",
+      "port": 5601,
+      "health": "/usr/bin/curl --fail -s -o /dev/null http://localhost:5601",
+      "poll": 10,
+      "ttl": 25
+    }
+  ],
+  "backends": [
+    {
+      "name": "elasticsearch",
+      "poll": 5,
+      "onChange": "/opt/containerbuddy/onStart.sh"
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+# ELK stack designed for container-native deployment
+# on Joyent's Triton platform.
+
+# ---------------------------------------------------
+# The Kibana application queries the ES cluster
+
+kibana:
+    image: 0x74696d/triton-kibana:latest
+    mem_limit: 1g
+    restart: always
+    ports:
+    - 5601 # default Kibana port
+    environment:
+    - CONFIG_PATH=/usr/share/kibana/config/kibana.yml
+    - NODE_ENV=production
+    - CONTAINERBUDDY=file:///etc/containerbuddy.json
+    command: >
+      /opt/containerbuddy/containerbuddy
+      /usr/share/kibana/node/bin/node
+      /usr/share/kibana/src/cli
+
+# ---------------------------------------------------
+# The logstash container is the target of Docker log drivers
+
+logstash:
+    image: 0x74696d/triton-logstash:latest
+    mem_limit: 1g
+    restart: always
+    ports:
+    # because the ports are chosen by the log_driver config
+    # these are fairly arbitrary but we're keeping them at
+    # the typical non-container values for familiarity
+    - "514"       # syslog tcp port
+    - "514/udp"   # syslog udp port
+    - "12201"     # gelf
+    - "12201/udp" # gelf udp port
+    # - "24224"     # fluentd tcp port
+    environment:
+    - CONTAINERBUDDY=file:///etc/containerbuddy.json
+    command: >
+      /opt/containerbuddy/containerbuddy
+      /opt/logstash/bin/logstash -f /etc/logstash/conf.d/logstash.conf
+
+# ---------------------------------------------------
+# Nginx produces logs to be ingested from various log drivers.
+# Override log_driver and log_opts in extending compose files
+
+nginx:
+    image: 0x74696d/triton-nginx
+    mem_limit: 512m
+    ports:
+    - 80
+    restart: always
+    environment:
+    - CONTAINERBUDDY
+    - NGINX_CONF
+    command: >
+      /opt/containerbuddy/containerbuddy
+      nginx -g "daemon off;"
+
+
+# ---------------------------------------------------
+# This common service acts as a template for master-only, data-only, and
+# master+data ES services defined in the docker-compose.yml file.
+
+elasticsearch:
+    image: 0x74696d/triton-elasticsearch:latest
+    mem_limit: 4g
+    restart: always
+
+    environment:
+    - CLUSTER_NAME=elasticsearch
+    - ES_HEAP_SIZE=1g # set to 50% of mem_limit, but no more than 31g
+    - ES_NODE_MASTER=true # default
+    - ES_NODE_DATA=true   # default
+    - CONTAINERBUDDY=file:///etc/containerbuddy.json
+    # set the number of threads we want based on the number of CPU shares
+    # that we'll get for this size container on Triton
+    - ES_JAVA_OPTS=-XX:-UseGCTaskAffinity -XX:-BindGCTaskThreadsToCPUs -XX:ParallelGCThreads=1 -XX:ParallelCMSThreads=1
+    # ES_HEAP_NEWSIZE # optional override
+    # ES_DIRECT_SIZE  # optional override
+
+    # Normally on Triton we won't expose these unless we want to have ES exposed
+    # to the Internet. Each container gets a private IP for internal use.
+    # ports:
+    # - 9200 # REST API
+    # - 9300 # transport API
+
+    command: >
+      /opt/containerbuddy/containerbuddy
+      /usr/share/elasticsearch/bin/elasticsearch
+      --default.path.conf=/etc/elasticsearch
+
+# ---------------------------------------------------
+# Consul as a service discovery tier
+
+consul:
+    image: progrium/consul:latest
+    command: -server -bootstrap -ui-dir /ui
+    restart: always
+    mem_limit: 128m
+    ports:
+        - 8500
+    expose:
+        - 53
+        - 8300
+        - 8301
+        - 8302
+        - 8400
+        - 8500
+    dns:
+       - 127.0.0.1

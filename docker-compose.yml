@@ -1,0 +1,110 @@
+# ELK stack designed for container-native deployment
+# on Joyent's Triton platform.
+
+# ---------------------------------------------------
+# The Kibana application queries the ES cluster
+
+kibana:
+    extends:
+      file: common-compose.yml
+      service: kibana
+    links:
+    - consul:consul # we'll remove this once TCNS goes live
+
+# ---------------------------------------------------
+# The logstash container is the target of Docker log drivers
+
+logstash:
+    extends:
+      file: common-compose.yml
+      service: logstash
+    mem_limit: 128m
+    links:
+    - consul:consul # we'll remove this once TCNS goes live
+
+# ---------------------------------------------------
+# Nginx produces logs to be ingested
+
+
+nginx_syslog:
+    extends:
+      file: common-compose.yml
+      service: nginx
+    mem_limit: 128m
+    log_driver: syslog
+    log_opt:
+      syslog-address: "tcp://${LOGSTASH}"
+    links:
+    - consul:consul
+
+nginx_gelf:
+    extends:
+      file: common-compose.yml
+      service: nginx
+    mem_limit: 128m
+    log_driver: gelf
+    log_opt:
+      gelf-address: "udp://${LOGSTASH}"
+    links:
+    - consul:consul
+
+# nginx_fluentd:
+#     extends:
+#       file: common-compose.yml
+#       service: nginx
+#     mem_limit: 128m
+#     log_driver: fluentd
+#     log_opt:
+#       fluentd-address: "${LOGSTASH}"
+#     links:
+#     - consul:consul
+
+# ---------------------------------------------------
+# The master-only node serves as the coordinator of the cluster only
+
+elasticsearch_master:
+    extends:
+      file: common-compose.yml
+      service: elasticsearch
+    environment:
+    - ES_NODE_MASTER=true
+    - ES_NODE_DATA=false
+    - CONTAINERBUDDY=file:///etc/containerbuddy-master.json
+    links:
+    - consul:consul # we'll remove this once TCNS goes live
+
+    # We expose 9200 to the Internet on the master only in this example for
+    # illustration and testing.
+    ports:
+    - 9200 # REST API
+
+# ---------------------------------------------------
+# The default nodes store data and act as potential master nodes.
+
+elasticsearch:
+    extends:
+      file: common-compose.yml
+      service: elasticsearch
+    links:
+    - consul:consul # we'll remove this once TCNS goes live
+
+# ---------------------------------------------------
+# Data-only nodes never act as master nodes.
+
+elasticsearch_data:
+    extends:
+      file: common-compose.yml
+      service: elasticsearch
+    environment:
+    - ES_NODE_MASTER=false
+    - ES_NODE_DATA=true
+    links:
+    - consul:consul # we'll remove this once TCNS goes live
+
+# ---------------------------------------------------
+# Consul as a service discovery tier
+
+consul:
+    extends:
+      file: common-compose.yml
+      service: consul

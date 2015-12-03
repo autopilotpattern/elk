@@ -1,0 +1,87 @@
+# Local testing version of ELK stack designed for container-native
+# deployment on Joyent's Triton platform.
+
+kibana:
+    extends:
+      file: common-compose.yml
+      service: kibana
+    mem_limit: 128m
+    build: kibana/
+    links:
+    - consul:consul
+
+logstash:
+    extends:
+      file: common-compose.yml
+      service: logstash
+    mem_limit: 512m
+    build: logstash/
+    links:
+    - consul:consul
+    ports:
+    - "514:514"             # syslog tcp port
+    - "514/udp:514/udp"     # syslog udp port
+    - "12201/udp:12201/udp" # gelf udp port
+    # - "24224:24224"        # fluentd tcp port
+
+nginx_syslog:
+    extends:
+      file: common-compose.yml
+      service: nginx
+    mem_limit: 128m
+    log_driver: syslog
+    log_opt:
+      syslog-address: "tcp://${LOGSTASH}"
+    links:
+    - consul:consul
+
+nginx_gelf:
+    extends:
+      file: common-compose.yml
+      service: nginx
+    mem_limit: 128m
+    log_driver: gelf
+    log_opt:
+      gelf-address: "udp://${LOGSTASH}"
+    links:
+    - consul:consul
+
+# nginx_fluentd:
+#     extends:
+#       file: common-compose.yml
+#       service: nginx
+#     mem_limit: 128m
+#     log_driver: fluentd
+#     log_opt:
+#       fluentd-address: "${LOGSTASH}"
+#     links:
+#     - consul:consul
+
+elasticsearch_master:
+    extends:
+      file: common-compose.yml
+      service: elasticsearch
+    mem_limit: 512m
+    environment:
+    - ES_NODE_MASTER=true
+    - ES_NODE_DATA=false
+    - CONTAINERBUDDY=file:///etc/containerbuddy-master.json
+    links:
+    - consul:consul
+    ports:
+    - 9200:9200 # REST API
+
+elasticsearch:
+    extends:
+      file: common-compose.yml
+      service: elasticsearch
+    mem_limit: 512m
+    links:
+    - consul:consul
+
+consul:
+    extends:
+      file: common-compose.yml
+      service: consul
+    ports:
+    - 8500:8500
