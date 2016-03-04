@@ -9,10 +9,12 @@ PHONY: *
 # build and release
 
 build:
-	cd kibana && docker build --tag 0x74696d/triton-kibana .
-	cd logstash && docker build --tag 0x74696d/triton-logstash .
+	export LOGSTASH=
+	docker-compose -f local-compose.yml -p elk build kibana logstash
 
 ship:
+	docker tag -f elk_kibana 0x74696d/triton-kibana
+	docker tag -f elk_logstash 0x74696d/triton-logstash
 	docker push 0x74696d/triton-kibana
 	docker push 0x74696d/triton-logstash
 

@@ -16,7 +16,7 @@ kibana:
     - CONTAINERBUDDY=file:///etc/containerbuddy.json
     command: >
       /bin/containerbuddy
-      /usr/share/kibana/node/bin/node
+      /usr/bin/node
       /usr/share/kibana/src/cli
 
 # ---------------------------------------------------

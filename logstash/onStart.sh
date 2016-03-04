@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 MASTER=
 while true
@@ -14,5 +14,4 @@ done
 
 # update elasticsearch URL configuration
 REPLACEMENT=$(printf 's/^.*hosts => \["elasticsearch"\].*$/  elasticsearch { hosts => ["%s:9200"] }/' ${MASTER})
-echo ${REPLACEMENT}
 sed -i "${REPLACEMENT}" /etc/logstash/conf.d/logstash.conf

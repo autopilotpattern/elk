@@ -7,6 +7,8 @@ kibana:
       service: kibana
     mem_limit: 128m
     build: kibana/
+    environment:
+      - CONSUL=consul
     links:
     - consul:consul
 
@@ -16,6 +18,8 @@ logstash:
       service: logstash
     mem_limit: 512m
     build: logstash/
+    environment:
+      - CONSUL=consul
     links:
     - consul:consul
     ports:
@@ -28,8 +32,8 @@ elasticsearch_master:
     extends:
       file: docker-compose.yml
       service: elasticsearch
+    image: es_elasticsearch
     mem_limit: 512m
-    build: .
     environment:
       - CONSUL=consul
       - ES_SERVICE_NAME=elasticsearch-master
@@ -45,8 +49,8 @@ elasticsearch:
     extends:
       file: docker-compose.yml
       service: elasticsearch
+    image: es_elasticsearch
     mem_limit: 512m
-    build: .
     environment:
       - CONSUL=consul
     links:
@@ -56,8 +60,8 @@ elasticsearch_data:
     extends:
       file: docker-compose.yml
       service: elasticsearch
+    image: es_elasticsearch
     mem_limit: 512m
-    build: .
     environment:
       - CONSUL=consul
       - ES_NODE_MASTER=false

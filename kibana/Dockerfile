@@ -1,18 +1,19 @@
-FROM debian:jessie
+FROM alpine:3.3
 
-RUN apt-get update && \
-    apt-get install -y \
+RUN apk --update add \
     curl \
     jq \
-    && rm -rf /var/lib/apt/lists/*
+    nodejs
 
 # If we wanted the development version we could pull that instead but we
 # want to run a production environment here
-RUN export PKG=kibana-4.3.0-linux-x64.tar.gz && \
-    curl -Lo ${PKG} "https://download.elastic.co/kibana/kibana/${PKG}" && \
-    tar -xzf ${PKG} && \
-    mkdir -p /usr/share/kibana && \
-    mv kibana-4.3.0-linux-x64/* /usr/share/kibana
+RUN export PKG=kibana-4.4.1-linux-x64.tar.gz \
+    && export PKG_SHA1=b4f1b5d89a0854e3fb1e6d31faa1bc78e063b083 \
+    && curl -Ls -o /tmp/${PKG} "https://download.elastic.co/kibana/kibana/${PKG}" \
+    && echo "${PKG_SHA1}  /tmp/${PKG}" | sha1sum -c \
+    && tar zxf /tmp/${PKG} \
+    && mv /kibana-4.4.1-linux-x64 /usr/share/kibana \
+    && rm /tmp/${PKG}
 
 EXPOSE 5601
 
