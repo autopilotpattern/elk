@@ -17,13 +17,14 @@ RUN export PKG=kibana-4.3.0-linux-x64.tar.gz && \
 EXPOSE 5601
 
 # get Containerbuddy release
-RUN export CB=containerbuddy-0.0.2-alpha &&\
-    mkdir -p /opt/containerbuddy && \
-    curl -Lo /tmp/${CB}.tar.gz \
-    https://github.com/joyent/containerbuddy/releases/download/0.0.2-alpha/${CB}.tar.gz && \
-	tar -xf /tmp/${CB}.tar.gz && \
-    mv /build/containerbuddy /opt/containerbuddy/
+ENV CONTAINERBUDDY_VERSION 1.1.0
+RUN export CB_SHA1=5cb5212707b5a7ffe41ee916add83a554d1dddfa \
+    && curl -Lso /tmp/containerbuddy.tar.gz \
+         "https://github.com/joyent/containerbuddy/releases/download/${CONTAINERBUDDY_VERSION}/containerbuddy-${CONTAINERBUDDY_VERSION}.tar.gz" \
+    && echo "${CB_SHA1}  /tmp/containerbuddy.tar.gz" | sha1sum -c \
+    && tar zxf /tmp/containerbuddy.tar.gz -C /bin \
+    && rm /tmp/containerbuddy.tar.gz
 
 # Add our configuration files and scripts
 ADD containerbuddy.json /etc/containerbuddy.json
-ADD onStart.sh /opt/containerbuddy/onStart.sh
+ADD onStart.sh /bin/onStart.sh

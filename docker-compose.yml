@@ -5,30 +5,146 @@
 # The Kibana application queries the ES cluster
 
 kibana:
-    extends:
-      file: common-compose.yml
-      service: kibana
-    links:
-    - consul:consul # we'll remove this once TCNS goes live
+    image: 0x74696d/triton-kibana:latest
+    mem_limit: 1g
+    restart: always
+    ports:
+    - 5601 # default Kibana port
+    environment:
+    - CONFIG_PATH=/usr/share/kibana/config/kibana.yml
+    - NODE_ENV=production
+    - CONTAINERBUDDY=file:///etc/containerbuddy.json
+    command: >
+      /bin/containerbuddy
+      /usr/share/kibana/node/bin/node
+      /usr/share/kibana/src/cli
 
 # ---------------------------------------------------
 # The logstash container is the target of Docker log drivers
 
 logstash:
-    extends:
-      file: common-compose.yml
-      service: logstash
-    mem_limit: 128m
-    links:
-    - consul:consul # we'll remove this once TCNS goes live
+    image: 0x74696d/triton-logstash:latest
+    mem_limit: 1g
+    restart: always
+    ports:
+    # because the ports are chosen by the log_driver config
+    # these are fairly arbitrary but we're keeping them at
+    # the typical non-container values for familiarity
+    - "514"       # syslog tcp port
+    - "514/udp"   # syslog udp port
+    - "12201"     # gelf
+    - "12201/udp" # gelf udp port
+    # - "24224"     # fluentd tcp port
+    environment:
+    - CONTAINERBUDDY=file:///etc/containerbuddy.json
+    command: >
+      /bin/containerbuddy
+      /opt/logstash/bin/logstash -f /etc/logstash/conf.d/logstash.conf
 
 # ---------------------------------------------------
-# Nginx produces logs to be ingested
+# This common service definition is the default for nodes that both store
+# data and act as potential masternodes. It also serves as a template for
+# master-only and data-only ES nodes.
 
+elasticsearch:
+    image: 0x74696d/triton-elasticsearch:latest
+    mem_limit: 4g
+    restart: always
+    labels:
+      - triton.cns.services=elasticsearch
+
+    env_file: _env
+    environment:
+      - ES_SERVICE_NAME=elasticsearch
+      - CLUSTER_NAME=elasticsearch
+      - ES_HEAP_SIZE=1g # set to 50% of mem_limit, but no more than 31g
+      - ES_NODE_MASTER=true # default
+      - ES_NODE_DATA=true   # default
+      - CONTAINERBUDDY=file:///etc/containerbuddy.json
+
+      # set the number of threads we want based on the number of CPU shares
+      # that we'll get for this size container on Triton
+      - ES_JAVA_OPTS=-XX:-UseGCTaskAffinity -XX:-BindGCTaskThreadsToCPUs -XX:ParallelGCThreads=1 -XX:ParallelCMSThreads=1
+      # ES_HEAP_NEWSIZE # optional override
+      # ES_DIRECT_SIZE  # optional override
+
+    command: >
+      /bin/containerbuddy
+      /opt/elasticsearch/bin/elasticsearch
+      --default.path.conf=/etc/elasticsearch
+
+# ---------------------------------------------------
+# The master-only node serves as the coordinator of the cluster only
+
+elasticsearch_master:
+    extends:
+      service: elasticsearch
+    labels:
+      - triton.cns.services=elasticsearch_master
+    environment:
+      - ES_SERVICE_NAME=elasticsearch-master
+      - ES_NODE_MASTER=true
+      - ES_NODE_DATA=false
+
+    # We expose 9200 to the Internet on the master only in this example for
+    # illustration and testing.
+    ports:
+    - 9200 # REST API
+
+# ---------------------------------------------------
+# Data-only nodes never act as master nodes.
+
+elasticsearch_data:
+    extends:
+      service: elasticsearch
+    labels:
+      - triton.cns.services=elasticsearch_data
+    environment:
+      - ES_NODE_MASTER=false
+      - ES_NODE_DATA=true
+
+# ---------------------------------------------------
+# Consul as a service discovery tier
+
+consul:
+    image: progrium/consul:latest
+    labels:
+      - triton.cns.services=consul
+    command: -server -bootstrap -ui-dir /ui
+    restart: always
+    mem_limit: 128m
+    ports:
+      - 8500
+    expose:
+      - 53
+      - 8300
+      - 8301
+      - 8302
+      - 8400
+      - 8500
+    dns:
+      - 127.0.0.1
+
+# ---------------------------------------------------
+# Nginx acts as our test source for logs to be ingested from the various
+# log drivers.
+
+# this is the base for our tests. override log_driver and log_opts
+nginx:
+    image: 0x74696d/triton-nginx
+    mem_limit: 512m
+    ports:
+    - 80
+    restart: always
+    environment:
+    - CONTAINERBUDDY
+    - NGINX_CONF
+    command: >
+      /opt/containerbuddy/containerbuddy
+      nginx -g "daemon off;"
 
 nginx_syslog:
     extends:
-      file: common-compose.yml
       service: nginx
     mem_limit: 128m
     log_driver: syslog
@@ -39,7 +155,6 @@ nginx_syslog:
 
 nginx_gelf:
     extends:
-      file: common-compose.yml
       service: nginx
     mem_limit: 128m
     log_driver: gelf
@@ -58,53 +173,3 @@ nginx_gelf:
 #       fluentd-address: "${LOGSTASH}"
 #     links:
 #     - consul:consul
-
-# ---------------------------------------------------
-# The master-only node serves as the coordinator of the cluster only
-
-elasticsearch_master:
-    extends:
-      file: common-compose.yml
-      service: elasticsearch
-    environment:
-    - ES_NODE_MASTER=true
-    - ES_NODE_DATA=false
-    - CONTAINERBUDDY=file:///etc/containerbuddy-master.json
-    links:
-    - consul:consul # we'll remove this once TCNS goes live
-
-    # We expose 9200 to the Internet on the master only in this example for
-    # illustration and testing.
-    ports:
-    - 9200 # REST API
-
-# ---------------------------------------------------
-# The default nodes store data and act as potential master nodes.
-
-elasticsearch:
-    extends:
-      file: common-compose.yml
-      service: elasticsearch
-    links:
-    - consul:consul # we'll remove this once TCNS goes live
-
-# ---------------------------------------------------
-# Data-only nodes never act as master nodes.
-
-elasticsearch_data:
-    extends:
-      file: common-compose.yml
-      service: elasticsearch
-    environment:
-    - ES_NODE_MASTER=false
-    - ES_NODE_DATA=true
-    links:
-    - consul:consul # we'll remove this once TCNS goes live
-
-# ---------------------------------------------------
-# Consul as a service discovery tier
-
-consul:
-    extends:
-      file: common-compose.yml
-      service: consul

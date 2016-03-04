@@ -3,7 +3,7 @@
 
 kibana:
     extends:
-      file: common-compose.yml
+      file: docker-compose.yml
       service: kibana
     mem_limit: 128m
     build: kibana/
@@ -12,7 +12,7 @@ kibana:
 
 logstash:
     extends:
-      file: common-compose.yml
+      file: docker-compose.yml
       service: logstash
     mem_limit: 512m
     build: logstash/
@@ -24,9 +24,60 @@ logstash:
     - "12201/udp:12201/udp" # gelf udp port
     # - "24224:24224"        # fluentd tcp port
 
+elasticsearch_master:
+    extends:
+      file: docker-compose.yml
+      service: elasticsearch
+    mem_limit: 512m
+    build: .
+    environment:
+      - CONSUL=consul
+      - ES_SERVICE_NAME=elasticsearch-master
+      - ES_NODE_MASTER=true
+      - ES_NODE_DATA=false
+      - CONTAINERBUDDY=file:///etc/containerbuddy.json
+    links:
+    - consul:consul
+    ports:
+    - 9200:9200 # REST API
+
+elasticsearch:
+    extends:
+      file: docker-compose.yml
+      service: elasticsearch
+    mem_limit: 512m
+    build: .
+    environment:
+      - CONSUL=consul
+    links:
+      - consul:consul
+
+elasticsearch_data:
+    extends:
+      file: docker-compose.yml
+      service: elasticsearch
+    mem_limit: 512m
+    build: .
+    environment:
+      - CONSUL=consul
+      - ES_NODE_MASTER=false
+      - ES_NODE_DATA=true
+    links:
+      - consul:consul
+
+consul:
+    extends:
+      file: docker-compose.yml
+      service: consul
+    ports:
+      - 8500:8500
+
+# -----------------------------------------------------
+# test sources
+
 nginx_syslog:
     extends:
-      file: common-compose.yml
+      file: docker-compose.yml
       service: nginx
     mem_limit: 128m
     log_driver: syslog
@@ -37,7 +88,7 @@ nginx_syslog:
 
 nginx_gelf:
     extends:
-      file: common-compose.yml
+      file: docker-compose.yml
       service: nginx
     mem_limit: 128m
     log_driver: gelf
@@ -48,7 +99,7 @@ nginx_gelf:
 
 # nginx_fluentd:
 #     extends:
-#       file: common-compose.yml
+#       file: docker-compose.yml
 #       service: nginx
 #     mem_limit: 128m
 #     log_driver: fluentd
@@ -56,32 +107,3 @@ nginx_gelf:
 #       fluentd-address: "${LOGSTASH}"
 #     links:
 #     - consul:consul
-
-elasticsearch_master:
-    extends:
-      file: common-compose.yml
-      service: elasticsearch
-    mem_limit: 512m
-    environment:
-    - ES_NODE_MASTER=true
-    - ES_NODE_DATA=false
-    - CONTAINERBUDDY=file:///etc/containerbuddy-master.json
-    links:
-    - consul:consul
-    ports:
-    - 9200:9200 # REST API
-
-elasticsearch:
-    extends:
-      file: common-compose.yml
-      service: elasticsearch
-    mem_limit: 512m
-    links:
-    - consul:consul
-
-consul:
-    extends:
-      file: common-compose.yml
-      service: consul
-    ports:
-    - 8500:8500

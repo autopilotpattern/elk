@@ -1,6 +1,6 @@
 {
-  "consul": "consul:8500",
-  "onStart": "/opt/containerbuddy/onStart.sh",
+  "consul": "{{ .CONSUL }}:8500",
+  "onStart": "/bin/onStart.sh",
   "services": [
     {
       "name": "kibana",
@@ -14,7 +14,7 @@
     {
       "name": "elasticsearch",
       "poll": 5,
-      "onChange": "/opt/containerbuddy/onStart.sh"
+      "onChange": "/bin/onStart.sh"
     }
   ]
 }
