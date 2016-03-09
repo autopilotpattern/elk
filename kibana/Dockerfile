@@ -28,4 +28,4 @@ RUN export CB_SHA1=5cb5212707b5a7ffe41ee916add83a554d1dddfa \
 
 # Add our configuration files and scripts
 ADD containerbuddy.json /etc/containerbuddy.json
-ADD onStart.sh /bin/onStart.sh
+ADD manage.sh /bin/manage.sh
