@@ -99,13 +99,57 @@ test() {
 # check for prereqs
 check() {
     command -v docker >/dev/null 2>&1 || {
-        echo "Docker is required, but does not appear to be installed. See https://docs.joyent.com/public-cloud/api-access/docker"; exit; }
-    if [ -z "${COMPOSE_FILE}" ]; then
-        command -v sdc-listmachines >/dev/null 2>&1 || {
-            echo "Joyent CloudAPI CLI is required to test on Triton, but does not appear to be installed. See https://apidocs.joyent.com/cloudapi/#getting-started"; exit; }
-    fi
+        echo
+        tput rev  # reverse
+        tput bold # bold
+        echo 'Docker is required, but does not appear to be installed.'
+        echo 'See https://docs.joyent.com/public-cloud/api-access/docker'
+        exit 1
+    }
     command -v json >/dev/null 2>&1 || {
-        echo "JSON CLI tool is required, but does not appear to be installed. See https://apidocs.joyent.com/cloudapi/#getting-started"; exit; }
+        echo
+        tput rev  # reverse
+        tput bold # bold
+        echo 'Error! JSON CLI tool is required, but does not appear to be installed.'
+        tput sgr0 # clear
+        echo 'See https://apidocs.joyent.com/cloudapi/#getting-started'
+        exit 1
+    }
+
+    # if we're not testing on Triton, don't bother checking Triton config
+    if [ ! -z "${COMPOSE_FILE}" ]; then
+        exit 0
+    fi
+
+    command -v triton >/dev/null 2>&1 || {
+        echo
+        tput rev  # reverse
+        tput bold # bold
+        echo 'Error! Joyent Triton CLI is required, but does not appear to be installed.'
+        tput sgr0 # clear
+        echo 'See https://www.joyent.com/blog/introducing-the-triton-command-line-tool'
+        exit 1
+    }
+
+    # make sure Docker client is pointed to the same place as the Triton client
+    local docker_user=$(docker info 2>&1 | awk -F": " '/SDCAccount:/{print $2}')
+    local triton_user=$(triton profile get | awk -F": " '/account:/{print $2}')
+    local docker_dc=$(echo $DOCKER_HOST | awk -F"/" '{print $3}' | awk -F'.' '{print $1}')
+    local triton_dc=$(triton profile get | awk -F"/" '/url:/{print $3}' | awk -F'.' '{print $1}')
+
+    if [ ! "$docker_user" = "$triton_user" ] || [ ! "$docker_dc" = "$triton_dc" ]; then
+        echo
+        tput rev  # reverse
+        tput bold # bold
+        echo 'Error! The Triton CLI configuration does not match the Docker CLI configuration.'
+        tput sgr0 # clear
+        echo
+        echo "Docker user: ${docker_user}"
+        echo "Triton user: ${triton_user}"
+        echo "Docker data center: ${docker_dc}"
+        echo "Triton data center: ${triton_dc}"
+        exit 1
+    fi
 }
 
 # get the IP:port of a container via either the local docker-machine or from
