@@ -27,8 +27,8 @@ RUN export LS_PKG=logstash-2.2.2.tar.gz \
     && rm /tmp/${LS_PKG}
 
 # get Containerbuddy release
-ENV CONTAINERBUDDY_VERSION 1.1.0
-RUN export CB_SHA1=5cb5212707b5a7ffe41ee916add83a554d1dddfa \
+ENV CONTAINERBUDDY_VERSION 1.2.0
+RUN export CB_SHA1=a20e0fb550e98abc9ca8b9ce80bf433a814eed41 \
     && curl -Lso /tmp/containerbuddy.tar.gz \
          "https://github.com/joyent/containerbuddy/releases/download/${CONTAINERBUDDY_VERSION}/containerbuddy-${CONTAINERBUDDY_VERSION}.tar.gz" \
     && echo "${CB_SHA1}  /tmp/containerbuddy.tar.gz" | sha1sum -c \

@@ -24,7 +24,7 @@ ship:
 
 run: export LOGSTASH = n/a
 run:
-	./start.sh
+	./test.sh
 
 # with 3 ES data nodes and 2 kibana app instances
 scale: export LOGSTASH = n/a
@@ -34,7 +34,7 @@ scale:
 
 # run test for test-syslog, test-gelf (or test-fluentd once it works)
 test-%:
-	./start.sh test $*
+	./test.sh test $*
 
 
 # -------------------------------------------
@@ -46,9 +46,9 @@ local:
 	-docker-compose -p elk rm -f || true
 	docker-compose -p elk -f local-compose.yml pull
 	docker-compose -p elk -f local-compose.yml build
-	./start.sh -f local-compose.yml
+	./test.sh -f local-compose.yml
 
 # test for local-test-syslog, local-test-gelf
 # (or local-test-fluentd once it works)
 local-test-%:
-	./start.sh -f local-compose.yml test $*
+	./test.sh -f local-compose.yml test $*
