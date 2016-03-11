@@ -153,10 +153,10 @@ check() {
 }
 
 # get the IP:port of a container via either the local docker-machine or from
-# sdc-listmachines.
+# triton CLI
 getIpPort() {
     if [ -z "${COMPOSE_FILE}" ]; then
-        local ip=$(sdc-listmachines --name ${COMPOSE_PROJECT_NAME}_$1_1 | json -a ips.1)
+        local ip=$(triton inst get ${COMPOSE_PROJECT_NAME}_$1_1 | json -a ips.1)
     else
         local ip=$(docker-machine ip default)
     fi
