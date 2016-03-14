@@ -1,7 +1,7 @@
-#!/bin/sh
+#!/bin/bash
 
 onStart() {
-    initLogStash
+    initLogstash
     initIndex
     reload
 }
@@ -15,7 +15,7 @@ initLogstash() {
     while :
     do
         echo $(printf '%s localhost kibana: initializing index' "$(date '+%b %d %H:%M:%S')") | \
-            nc ${logstash} 514 && break
+            nc -u ${logstash} 514 && break
         sleep 1
         echo -ne .
     done
@@ -34,10 +34,10 @@ initIndex() {
          -d '{"title" : "logstash-*",  "timeFieldName": "@timestamp"}' \
          "http://${es_master}:9200/.kibana/index-pattern/logstash-*"
 
-    curl -XPOST -s --fail \
+    curl -XPOST -v --fail \
          -d $(printf '{"doc":{"doc":{"buildNum":%s,"defaultIndex":"%s"},"defaultIndex":"%s"}}' \
                      9369 "logstash-*" "logstash-*") \
-         "http://${es_master}:9200/.kibana/config/4.3.0/_update"
+         "http://${es_master}:9200/.kibana/config/4.4.1/_update"
     echo 'Done!'
 }
 
@@ -49,7 +49,6 @@ reload() {
 
     # update elasticsearch_url configuration
     REPLACEMENT=$(printf 's/^.*elasticsearch\.url.*$/elasticsearch.url: "http:\/\/%s:9200"/' ${es_master})
-    echo ${REPLACEMENT}
     sed -i "${REPLACEMENT}" /usr/share/kibana/config/kibana.yml
 }
 
@@ -62,19 +61,23 @@ getServiceIp() {
     while true
     do
         ip=$(curl -Ls --fail http://${CONSUL}:8500/v1/catalog/service/$1 | jq -r '.[0].ServiceAddress')
-        if [[ ${ip} != "null" ]] && [[ -n ${ip} ]]; then
+        if [[ -n ${ip} ]] && [[ ${ip} != "null" ]]; then
             break
         fi
         # no nodes up yet, so wait and retry
         sleep 1.7
     done
-    echo
 }
 
 help() {
     echo "Usage: ./manage.sh onStart  => first-run configuration for Kibana"
     echo "       ./manage.sh reload   => update Kibana config on upstream changes"
 }
+
+if [[ -z ${CONSUL} ]]; then
+    echo "Missing CONSUL environment variable"
+    exit 1
+fi
 
 until
     cmd=$1

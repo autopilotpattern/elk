@@ -1,9 +1,11 @@
-FROM alpine:3.3
+FROM debian:jessie
 
-RUN apk --update add \
+RUN apt-get update && \
+    apt-get install -y \
     curl \
     jq \
-    nodejs
+    netcat \
+    && rm -rf /var/lib/apt/lists/*
 
 # If we wanted the development version we could pull that instead but we
 # want to run a production environment here
@@ -18,8 +20,8 @@ RUN export PKG=kibana-4.4.1-linux-x64.tar.gz \
 EXPOSE 5601
 
 # get Containerbuddy release
-ENV CONTAINERBUDDY_VERSION 1.2.0
-RUN export CB_SHA1=a20e0fb550e98abc9ca8b9ce80bf433a814eed41 \
+ENV CONTAINERBUDDY_VERSION 1.2.1
+RUN export CB_SHA1=aca04b3c6d6ed66294241211237012a23f8b4f20 \
     && curl -Lso /tmp/containerbuddy.tar.gz \
          "https://github.com/joyent/containerbuddy/releases/download/${CONTAINERBUDDY_VERSION}/containerbuddy-${CONTAINERBUDDY_VERSION}.tar.gz" \
     && echo "${CB_SHA1}  /tmp/containerbuddy.tar.gz" | sha1sum -c \
