@@ -51,6 +51,7 @@ elasticsearch:
     mem_limit: 512m
     environment:
       - CONSUL=consul
+      - ES_SERVICE_NAME=elasticsearch-master
     links:
       - consul:consul
 
@@ -62,6 +63,7 @@ elasticsearch_data:
     mem_limit: 512m
     environment:
       - CONSUL=consul
+      - ES_SERVICE_NAME=elasticsearch-data
       - ES_NODE_MASTER=false
       - ES_NODE_DATA=true
     links:

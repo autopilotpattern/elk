@@ -53,11 +53,11 @@ elasticsearch:
     mem_limit: 4g
     restart: always
     labels:
-      - triton.cns.services=elasticsearch
+      - triton.cns.services=elasticsearch-master
 
     env_file: _env
     environment:
-      - ES_SERVICE_NAME=elasticsearch
+      - ES_SERVICE_NAME=elasticsearch-master
       - CLUSTER_NAME=elasticsearch
       - ES_HEAP_SIZE=1g # set to 50% of mem_limit, but no more than 31g
       - ES_NODE_MASTER=true # default
@@ -97,6 +97,7 @@ elasticsearch_data:
     labels:
       - triton.cns.services=elasticsearch-data
     environment:
+      - ES_SERVICE_NAME=elasticsearch-data
       - ES_NODE_MASTER=false
       - ES_NODE_DATA=true
 
