@@ -42,8 +42,6 @@ elasticsearch_master:
       - CONTAINERBUDDY=file:///etc/containerbuddy.json
     links:
     - consul:consul
-    ports:
-    - 9200:9200 # REST API
 
 elasticsearch:
     extends:

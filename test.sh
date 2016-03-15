@@ -46,11 +46,6 @@ show() {
                   'Waiting for Consul...' \
                   'Opening Consul console... Refresh the page to watch services register.'
 
-    # poll Elasticsearch for liveness
-    poll-for-page "http://$(getIpPort elasticsearch_master 9200)/_cluster/health?pretty=true" \
-                  'Waiting for Elasticsearch...' \
-                  'Opening cluster status page.'
-
     # poll Kibana for liveness and then open the page
     poll-for-page "http://$(getIpPort kibana 5601)/app/kibana#discover" \
                   'Waiting for Kibana to register as healthy...' \
@@ -148,6 +143,17 @@ check() {
         echo "Triton user: ${triton_user}"
         echo "Docker data center: ${docker_dc}"
         echo "Triton data center: ${triton_dc}"
+        exit 1
+    fi
+
+    local triton_cns_enabled=$(triton account get | awk -F": " '/cns/{print $2}')
+    if [ ! "true" == "$triton_cns_enabled" ]; then
+        echo
+        tput rev  # reverse
+        tput bold # bold
+        echo 'Error! Triton CNS is required and not enabled.'
+        tput sgr0 # clear
+        echo
         exit 1
     fi
 }

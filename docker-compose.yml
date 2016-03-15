@@ -9,14 +9,15 @@ kibana:
     mem_limit: 1g
     restart: always
     ports:
-    - 5601 # default Kibana port
+      - 5601 # default Kibana port
+    env_file: _env
     environment:
-    - CONFIG_PATH=/usr/share/kibana/config/kibana.yml
-    - NODE_ENV=production
-    - CONTAINERBUDDY=file:///etc/containerbuddy.json
+      - CONFIG_PATH=/usr/share/kibana/config/kibana.yml
+      - NODE_ENV=production
+      - CONTAINERBUDDY=file:///etc/containerbuddy.json
     command: >
       /bin/containerbuddy
-      /usr/bin/node
+      /usr/share/kibana/node/bin/node
       /usr/share/kibana/src/cli
 
 # ---------------------------------------------------
@@ -35,8 +36,9 @@ logstash:
     - "12201"     # gelf
     - "12201/udp" # gelf udp port
     # - "24224"     # fluentd tcp port
+    env_file: _env
     environment:
-    - CONTAINERBUDDY=file:///etc/containerbuddy.json
+      - CONTAINERBUDDY=file:///etc/containerbuddy.json
     command: >
       /bin/containerbuddy
       /opt/logstash/bin/logstash -f /etc/logstash/conf.d/logstash.conf
@@ -70,7 +72,7 @@ elasticsearch:
 
     command: >
       /bin/containerbuddy
-      /opt/elasticsearch/bin/elasticsearch
+      /usr/share/elasticsearch/bin/elasticsearch
       --default.path.conf=/etc/elasticsearch
 
 # ---------------------------------------------------
@@ -80,16 +82,11 @@ elasticsearch_master:
     extends:
       service: elasticsearch
     labels:
-      - triton.cns.services=elasticsearch_master
+      - triton.cns.services=elasticsearch-master
     environment:
       - ES_SERVICE_NAME=elasticsearch-master
       - ES_NODE_MASTER=true
       - ES_NODE_DATA=false
-
-    # We expose 9200 to the Internet on the master only in this example for
-    # illustration and testing.
-    ports:
-    - 9200 # REST API
 
 # ---------------------------------------------------
 # Data-only nodes never act as master nodes.
@@ -98,7 +95,7 @@ elasticsearch_data:
     extends:
       service: elasticsearch
     labels:
-      - triton.cns.services=elasticsearch_data
+      - triton.cns.services=elasticsearch-data
     environment:
       - ES_NODE_MASTER=false
       - ES_NODE_DATA=true

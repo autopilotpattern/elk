@@ -9,7 +9,6 @@ PHONY: *
 # build and release
 
 build:
-	export LOGSTASH=
 	docker-compose -f local-compose.yml -p elk build kibana logstash
 
 ship:
@@ -22,12 +21,10 @@ ship:
 # -------------------------------------------
 # run on Triton
 
-run: export LOGSTASH = n/a
 run:
 	./test.sh
 
 # with 3 ES data nodes and 2 kibana app instances
-scale: export LOGSTASH = n/a
 scale:
 	docker-compose -p elk scale elasticsearch=3
 	docker-compose -p elk scale kibana=2
@@ -40,7 +37,6 @@ test-%:
 # -------------------------------------------
 # run against a local Docker environment
 
-local: export LOGSTASH = n/a
 local:
 	-docker-compose -p elk stop || true
 	-docker-compose -p elk rm -f || true
