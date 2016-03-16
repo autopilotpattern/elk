@@ -36,11 +36,7 @@ TRITON_ACCOUNT=
 
 run() {
     check
-    docker-compose up -d \
-               elasticsearch \
-               elasticsearch_master \
-               kibana \
-               logstash
+    docker-compose up -d
     show
     test
 }
@@ -100,8 +96,8 @@ check() {
         tput rev  # reverse
         tput bold # bold
         echo 'Docker is required, but does not appear to be installed.'
-        echo 'See https://docs.joyent.com/public-cloud/api-access/docker'
         tput sgr0 # clear
+        echo 'See https://docs.joyent.com/public-cloud/api-access/docker'
         exit 1
     }
     command -v json >/dev/null 2>&1 || {
@@ -171,6 +167,7 @@ check() {
 getPublicUrl() {
     if [ -z "${COMPOSE_FILE}" ]; then
         local cname=$(printf '%s.svc.%s.%s.triton.zone' $1 ${TRITON_ACCOUNT} ${TRITON_DC})
+        local port=$2
         echo "$cname:$port"
     else
         local name=$(echo $1 | sed 's/_/-/')
@@ -211,8 +208,14 @@ poll-for-page() {
         echo -ne .
     done
     echo
-    echo "$3"
-    open "$1"
+
+    which open &>/dev/null
+    if [ $? -eq 0 ]; then
+        echo "$3"
+        open "$1"
+    else
+        echo "Web interface available at $1"
+    fi
 }
 
 doStuff() {
@@ -247,5 +250,6 @@ done
 # default behavior
 echo "Starting example application"
 echo "project prefix:      $COMPOSE_PROJECT_NAME"
-echo "docker-compose file: $COMPOSE_FILE"
+echo "docker-compose file: ${COMPOSE_FILE:-docker-compose.yml}"
+
 run
