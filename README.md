@@ -12,8 +12,8 @@ The components of this stack are:
 - [Kibana](https://www.elastic.co/products/kibana), as a web UI to search the logs we store in Elasticsearch.
 - [Consul](https://www.consul.io/), acting a service catalog to support discovery
 - [Containerbuddy](http://containerbuddy.io), to help with service discovery and bootstrap orchestration
-- [Triton](https://www.joyent.com/), Joyent's container-native infrastructure platform, including the new [Docker log drivers](https://www.joyent.com/blog/docker-log-drivers) support.
-- Nginx, acting as a source of logs for testing.
+- [Triton](https://www.joyent.com/), Joyent's container-native infrastructure platform.
+- [Nginx](https://www.nginx.com/), acting as a source of logs for testing.
 
 ![Diagram of Triton-ELK architecture](./doc/triton-elk.png)
 
@@ -30,8 +30,9 @@ Additionally, the ELK application expects certain indexes to be created in Elast
 ```bash
 curl -O https://raw.githubusercontent.com/joyent/sdc-docker/master/tools/sdc-docker-setup.sh && chmod +x sdc-docker-setup.sh
 ./sdc-docker-setup.sh -k us-east-1.api.joyent.com <ACCOUNT> ~/.ssh/<PRIVATE_KEY_FILE>
+```
 
-Check that everything is configured correctly by running `./test.sh check`. If it returns without an error you're all set.
+Check that everything is configured correctly by running `./test.sh check`. If it returns without an error you're all set. This script will create and `_env` file that includes the Triton CNS name for the Consul service.
 
 
 ### Start the stack
@@ -69,7 +70,6 @@ elk_logstash_1               /bin/containerbuddy   Up   0.0.0.0:12201->12201/tcp
                                                         24224/tcp,
                                                         0.0.0.0:514->514/tcp,
                                                         0.0.0.0:514->514/udp
-
 ```
 
 Within a few moments all components of the application will be registered in the Consul discovery service and will have found the other components they need. We can add new nodes to Elasticsearch just by running `docker-compose -p scale <node type>=<number of nodes>`.
@@ -98,7 +98,6 @@ Creating elk_nginx_syslog_1
 Waiting for Nginx to register as healthy...
 
 Opening web page.
-
 ```
 
 HTTP requests that we send to Nginx will be logged and be visible in Kibana.

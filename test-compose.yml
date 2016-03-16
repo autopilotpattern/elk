@@ -9,6 +9,8 @@ nginx:
     ports:
       - 80
     restart: always
+    labels:
+      - triton.cns.services=nginx
     environment:
       - CONSUL
       - CONTAINERBUDDY
@@ -21,6 +23,8 @@ nginx_syslog:
     extends:
       service: nginx
     mem_limit: 128m
+    labels:
+      - triton.cns.services=nginx-syslog
     log_driver: syslog
     log_opt:
       syslog-address: "tcp://${LOGSTASH}"
@@ -29,6 +33,8 @@ nginx_gelf:
     extends:
       service: nginx
     mem_limit: 128m
+    labels:
+      - triton.cns.services=nginx-gelf
     log_driver: gelf
     log_opt:
       gelf-address: "udp://${LOGSTASH}"
@@ -41,6 +47,8 @@ nginx_gelf:
 #     extends:
 #       service: nginx
 #     mem_limit: 128m
+#    labels:
+#      - triton.cns.services=nginx-fluentd
 #     log_driver: fluentd
 #     log_opt:
 #       fluentd-address: "${LOGSTASH}"

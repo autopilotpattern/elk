@@ -26,11 +26,16 @@ export COMPOSE_FILE=
 # give the docker remote api more time before timeout
 export COMPOSE_HTTP_TIMEOUT=300
 
+# populated by `check` function whenever we're using Triton
+TRITON_USER=
+TRITON_DC=
+TRITON_ACCOUNT=
 
 # ---------------------------------------------------
 # Top-level commmands
 
 run() {
+    check
     docker-compose up -d \
                elasticsearch \
                elasticsearch_master \
@@ -41,19 +46,21 @@ run() {
 }
 
 show() {
+    check
     # poll Consul for liveness and then open the console
-    poll-for-page "http://$(getIpPort consul 8500)/ui/" \
+    poll-for-page "http://$(getPublicUrl consul 8500)/ui/" \
                   'Waiting for Consul...' \
                   'Opening Consul console... Refresh the page to watch services register.'
 
     # poll Kibana for liveness and then open the page
-    poll-for-page "http://$(getIpPort kibana 5601)/app/kibana#discover" \
+    poll-for-page "http://$(getPublicUrl kibana 5601)/app/kibana#discover" \
                   'Waiting for Kibana to register as healthy...' \
                   'Opening Kibana console.'
 }
 
 # Run test clients
 test() {
+    check
     local logtype=$1
     local port
     local protocol=tcp
@@ -81,17 +88,12 @@ test() {
         NGINX_CONF="$(cat ./nginx/nginx.conf)" \
         docker-compose -f test-compose.yml up -d nginx_$logtype
 
-    poll-for-page "http://$(getIpPort nginx_$logtype 80)" \
+    poll-for-page "http://$(getPublicUrl nginx-$logtype 80)" \
                   'Waiting for Nginx to register as healthy...' \
                   'Opening web page.'
 }
 
-
-
-# ---------------------------------------------------
-# utility functions
-
-# check for prereqs
+# Check for correct configuration
 check() {
     command -v docker >/dev/null 2>&1 || {
         echo
@@ -99,6 +101,7 @@ check() {
         tput bold # bold
         echo 'Docker is required, but does not appear to be installed.'
         echo 'See https://docs.joyent.com/public-cloud/api-access/docker'
+        tput sgr0 # clear
         exit 1
     }
     command -v json >/dev/null 2>&1 || {
@@ -128,11 +131,11 @@ check() {
 
     # make sure Docker client is pointed to the same place as the Triton client
     local docker_user=$(docker info 2>&1 | awk -F": " '/SDCAccount:/{print $2}')
-    local triton_user=$(triton profile get | awk -F": " '/account:/{print $2}')
     local docker_dc=$(echo $DOCKER_HOST | awk -F"/" '{print $3}' | awk -F'.' '{print $1}')
-    local triton_dc=$(triton profile get | awk -F"/" '/url:/{print $3}' | awk -F'.' '{print $1}')
-
-    if [ ! "$docker_user" = "$triton_user" ] || [ ! "$docker_dc" = "$triton_dc" ]; then
+    TRITON_USER=$(triton profile get | awk -F": " '/account:/{print $2}')
+    TRITON_DC=$(triton profile get | awk -F"/" '/url:/{print $3}' | awk -F'.' '{print $1}')
+    TRITON_ACCOUNT=$(triton account get | awk -F": " '/id:/{print $2}')
+    if [ ! "$docker_user" = "$TRITON_USER" ] || [ ! "$docker_dc" = "$TRITON_DC" ]; then
         echo
         tput rev  # reverse
         tput bold # bold
@@ -140,9 +143,9 @@ check() {
         tput sgr0 # clear
         echo
         echo "Docker user: ${docker_user}"
-        echo "Triton user: ${triton_user}"
+        echo "Triton user: ${TRITON_USER}"
         echo "Docker data center: ${docker_dc}"
-        echo "Triton data center: ${triton_dc}"
+        echo "Triton data center: ${TRITON_DC}"
         exit 1
     fi
 
@@ -156,18 +159,25 @@ check() {
         echo
         exit 1
     fi
+
+    echo CONSUL=consul.svc.${TRITON_ACCOUNT}.${TRITON_DC}.cns.joyent.com > _env
 }
 
-# get the IP:port of a container via either the local docker-machine or from
-# triton CLI
-getIpPort() {
+# ---------------------------------------------------
+# utility functions
+
+# get the address for a container via either local docker-machine or Triton CLI.
+# requires service name (or name + port + protocol for local use)
+getPublicUrl() {
     if [ -z "${COMPOSE_FILE}" ]; then
-        local ip=$(triton inst get ${COMPOSE_PROJECT_NAME}_$1_1 | json -a ips.1)
+        local cname=$(printf '%s.svc.%s.%s.triton.zone' $1 ${TRITON_ACCOUNT} ${TRITON_DC})
+        echo "$cname:$port"
     else
+        local name=$(echo $1 | sed 's/_/-/')
         local ip=$(docker-machine ip default)
+        local port=$(getPort $name $2 $3)
+        echo "$ip:$port"
     fi
-    local port=$(getPort $1 $2 $3)
-    echo "$ip:$port"
 }
 
 # get the IP:port of a container's private IP via `docker exec`
@@ -235,7 +245,6 @@ do
 done
 
 # default behavior
-check
 echo "Starting example application"
 echo "project prefix:      $COMPOSE_PROJECT_NAME"
 echo "docker-compose file: $COMPOSE_FILE"
