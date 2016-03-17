@@ -8,6 +8,8 @@ kibana:
     image: 0x74696d/triton-kibana:latest
     mem_limit: 1g
     restart: always
+    labels:
+      - triton.cns.services=kibana
     ports:
       - 5601 # default Kibana port
     env_file: _env
@@ -27,6 +29,8 @@ logstash:
     image: 0x74696d/triton-logstash:latest
     mem_limit: 1g
     restart: always
+    labels:
+      - triton.cns.services=logstash
     ports:
     # because the ports are chosen by the log_driver config
     # these are fairly arbitrary but we're keeping them at
