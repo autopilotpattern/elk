@@ -5,7 +5,7 @@
     {
       "name": "kibana",
       "port": 5601,
-      "health": "/usr/bin/curl --fail -s -o /dev/null http://localhost:5601",
+      "health": ["/bin/manage.sh", "health"],
       "poll": 10,
       "ttl": 25
     }
