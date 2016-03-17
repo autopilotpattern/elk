@@ -5,7 +5,7 @@ help() {
     echo 'Usage ./test.sh [-f docker-compose.yml] [-p project] [args]'
     echo
     echo 'Optional args'
-    echo '  run:            [default] starts up the entire stack and runs the test clients.'
+    echo '  run:            [default] starts up the entire stack.'
     echo '  check:          verify your local environment is correctly configured.'
     echo '  show:           open web pages of an already running stack.'
     echo '  test <logtype>: run test client against an already running stack. logtype'
@@ -38,7 +38,6 @@ run() {
     check
     docker-compose up -d
     show
-    test
 }
 
 show() {
