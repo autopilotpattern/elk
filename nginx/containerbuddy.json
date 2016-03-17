@@ -1,5 +1,5 @@
 {
-  "consul": "{{ .CONSUL }}:8500",
+  "consul": "{{ .CONSUL }}",
   "onStart": "/opt/containerbuddy/reload.sh",
   "services": [
     {
