@@ -76,12 +76,22 @@ test() {
             exit 1;;
     esac
 
-    echo 'Starting Nginx log source...' && \
-        CONSUL=$(getPrivateIpPort consul 8500 tcp) \
-        LOGSTASH=$(getPrivateIpPort logstash $port $protocol) \
-        CONTAINERBUDDY="$(cat ./nginx/containerbuddy.json)" \
-        NGINX_CONF="$(cat ./nginx/nginx.conf)" \
-        docker-compose -f test-compose.yml up -d nginx_$logtype
+    echo 'Starting Nginx log source...'
+
+    local consul=$(getPrivateIpPort consul 8500 tcp)
+    local logstash=$(getPrivateIpPort logstash $port $protocol)
+
+    docker run -d -m 128m -p 80 \
+           --name ${COMPOSE_PROJECT_NAME}_nginx_${logtype}_1 \
+           --label "triton.cns.services=nginx-${logtype}" \
+           --restart=always \
+           --log-driver=${logtype} \
+           --log-opt ${logtype}-address=${protocol}://${logstash} \
+           -e CONSUL="${consul}" \
+           -e CONTAINERBUDDY="$(cat ./nginx/containerbuddy.json)" \
+           -e NGINX_CONF="$(cat ./nginx/nginx.conf)" \
+           0x74696d/triton-nginx \
+           /opt/containerbuddy/containerbuddy nginx -g "daemon off;"
 
     poll-for-page "http://$(getPublicUrl nginx-$logtype 80)" \
                   'Waiting for Nginx to register as healthy...' \
