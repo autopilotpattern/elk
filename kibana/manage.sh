@@ -20,17 +20,6 @@ onStart() {
         sleep 1
     done
     echo
-    getServiceIp logstash
-    logstash=${ip}
-    echo 'Writing initial log entry into logstash...'
-    while :
-    do
-        echo $(printf '%s localhost kibana: initializing index' "$(date '+%b %d %H:%M:%S')") | \
-            nc -u ${logstash} 514 && break
-        sleep 1
-        echo -ne .
-    done
-    echo "Done!"
     reload
 }
 
@@ -51,7 +40,8 @@ reload() {
 # kibana has started because Kibana initializes something in ES.
 # So we'll do this on the first health check only.
 health() {
-    if mkdir /tmp/.kibana-init; then
+    mkdir /tmp/.kibana-init &>/dev/null
+    if [ $? -eq 0 ]; then
         echo 'Setting default index for .kibana to logstash-*'
         getServiceIp elasticsearch-master
         es_master=${ip}
@@ -59,12 +49,12 @@ health() {
              -d '{"doc":{"doc":{"buildNum":9693, "defaultIndex":"logstash-*"},"defaultIndex":"logstash-*"}}' \
              "http://${es_master}:9200/.kibana/config/4.4.1/_update"
         echo
+
         getServiceIp logstash
         logstash=${ip}
-        local now=$(date '+%b %d %H:%M:%S')
-        echo $(printf '%s localhost kibana: initializing index' now) | \
-                nc -u ${logstash} 514 && break
-        echo Done!
+        echo 'Writing initial log entry into logstash...'
+        nc -w1 -u ${logstash} 514 <<< 'kibana: initializing index'
+        echo 'Done!'
     fi
     # typical health check
     /usr/bin/curl --fail -s -o /dev/null http://localhost:5601
