@@ -3,19 +3,23 @@
 
 kibana:
     extends:
-      file: common-compose.yml
+      file: docker-compose.yml
       service: kibana
     mem_limit: 128m
     build: kibana/
+    environment:
+      - CONSUL=consul
     links:
     - consul:consul
 
 logstash:
     extends:
-      file: common-compose.yml
+      file: docker-compose.yml
       service: logstash
     mem_limit: 512m
     build: logstash/
+    environment:
+      - CONSUL=consul
     links:
     - consul:consul
     ports:
@@ -24,64 +28,50 @@ logstash:
     - "12201/udp:12201/udp" # gelf udp port
     # - "24224:24224"        # fluentd tcp port
 
-nginx_syslog:
-    extends:
-      file: common-compose.yml
-      service: nginx
-    mem_limit: 128m
-    log_driver: syslog
-    log_opt:
-      syslog-address: "tcp://${LOGSTASH}"
-    links:
-    - consul:consul
-
-nginx_gelf:
-    extends:
-      file: common-compose.yml
-      service: nginx
-    mem_limit: 128m
-    log_driver: gelf
-    log_opt:
-      gelf-address: "udp://${LOGSTASH}"
-    links:
-    - consul:consul
-
-# nginx_fluentd:
-#     extends:
-#       file: common-compose.yml
-#       service: nginx
-#     mem_limit: 128m
-#     log_driver: fluentd
-#     log_opt:
-#       fluentd-address: "${LOGSTASH}"
-#     links:
-#     - consul:consul
-
 elasticsearch_master:
     extends:
-      file: common-compose.yml
+      file: docker-compose.yml
       service: elasticsearch
+    image: es_elasticsearch
     mem_limit: 512m
     environment:
-    - ES_NODE_MASTER=true
-    - ES_NODE_DATA=false
-    - CONTAINERBUDDY=file:///etc/containerbuddy-master.json
+      - CONSUL=consul
+      - ES_SERVICE_NAME=elasticsearch-master
+      - ES_NODE_MASTER=true
+      - ES_NODE_DATA=false
+      - CONTAINERBUDDY=file:///etc/containerbuddy.json
     links:
     - consul:consul
-    ports:
-    - 9200:9200 # REST API
 
 elasticsearch:
     extends:
-      file: common-compose.yml
+      file: docker-compose.yml
       service: elasticsearch
+    image: es_elasticsearch
     mem_limit: 512m
+    environment:
+      - CONSUL=consul
+      - ES_SERVICE_NAME=elasticsearch-master
     links:
-    - consul:consul
+      - consul:consul
+
+elasticsearch_data:
+    extends:
+      file: docker-compose.yml
+      service: elasticsearch
+    image: es_elasticsearch
+    mem_limit: 512m
+    environment:
+      - CONSUL=consul
+      - ES_SERVICE_NAME=elasticsearch-data
+      - ES_NODE_MASTER=false
+      - ES_NODE_DATA=true
+    links:
+      - consul:consul
 
 consul:
     extends:
-      file: common-compose.yml
+      file: docker-compose.yml
       service: consul
     ports:
-    - 8500:8500
+      - 8500:8500
