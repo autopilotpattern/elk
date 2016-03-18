@@ -1,6 +1,6 @@
 {
   "consul": "{{ .CONSUL }}",
-  "onStart": "/opt/containerbuddy/reload.sh",
+  "onStart": "/opt/containerbuddy/reload.sh preStart",
   "services": [
     {
       "name": "nginx",
