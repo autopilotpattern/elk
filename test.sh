@@ -90,7 +90,7 @@ test() {
            -e CONSUL="${consul}" \
            -e CONTAINERBUDDY="$(cat ./nginx/containerbuddy.json)" \
            -e NGINX_CONF="$(cat ./nginx/nginx.conf)" \
-           0x74696d/triton-nginx \
+           autopilotpattern/nginx \
            /opt/containerbuddy/containerbuddy nginx -g "daemon off;"
 
     poll-for-page "http://$(getPublicUrl nginx-$logtype 80)" \

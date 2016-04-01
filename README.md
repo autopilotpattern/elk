@@ -1,4 +1,4 @@
-triton-elk
+ELK autopilot pattern
 ==========
 
 *[Autopilot pattern](http://autopilotpattern.io/) implementation of ELK*
@@ -91,8 +91,8 @@ This repo also includes a Docker Compose file for starting Nginx containers that
 ```sh
 $ ./test.sh -p elk test syslog
 Starting Nginx log source...
-Pulling nginx_syslog (0x74696d/triton-nginx:latest)...
-latest: Pulling from 0x74696d/triton-nginx
+Pulling nginx_syslog (autopilotpattern/nginx:latest)...
+latest: Pulling from autopilotpattern/nginx
 ...
 Creating elk_nginx_syslog_1
 Waiting for Nginx to register as healthy...
