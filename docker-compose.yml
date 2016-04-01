@@ -5,7 +5,7 @@
 # The Kibana application queries the ES cluster
 
 kibana:
-    image: 0x74696d/triton-kibana:latest
+    image: autopilotpattern/kibana:latest
     mem_limit: 1g
     restart: always
     labels:
@@ -26,7 +26,7 @@ kibana:
 # The logstash container is the target of Docker log drivers
 
 logstash:
-    image: 0x74696d/triton-logstash:latest
+    image: autopilotpattern/logstash:latest
     mem_limit: 1g
     restart: always
     labels:
@@ -53,7 +53,7 @@ logstash:
 # master-only and data-only ES nodes.
 
 elasticsearch:
-    image: 0x74696d/triton-elasticsearch:latest
+    image: autopilotpattern/elasticsearch:latest
     mem_limit: 4g
     restart: always
     labels:
