@@ -1,7 +1,18 @@
-ELK autopilot pattern
+Autopilot Pattern ELK
 ==========
 
-*[Autopilot pattern](http://autopilotpattern.io/) implementation of ELK*
+*[Autopilot Pattern](http://autopilotpattern.io/) implementation of ELK*
+
+- [Elasticsearch](https://github.com/autopilotpattern/elasticsearch): [![DockerPulls](https://img.shields.io/docker/pulls/autopilotpattern/elasticsearch.svg)](https://registry.hub.docker.com/u/autopilotpattern/elasticsearch/)
+[![DockerStars](https://img.shields.io/docker/stars/autopilotpattern/elasticsearch.svg)](https://registry.hub.docker.com/u/autopilotpattern/elasticsearch/)
+[![ImageLayers](https://badge.imagelayers.io/autopilotpattern/elasticsearch:latest.svg)](https://imagelayers.io/?images=autopilotpattern/elasticsearch:latest)
+- [Logstash](https://github.com/autopilotpattern/elk/tree/master/logstash): [![DockerPulls](https://img.shields.io/docker/pulls/autopilotpattern/logstash.svg)](https://registry.hub.docker.com/u/autopilotpattern/logstash/)
+[![DockerStars](https://img.shields.io/docker/stars/autopilotpattern/logstash.svg)](https://registry.hub.docker.com/u/autopilotpattern/logstash/)
+[![ImageLayers](https://badge.imagelayers.io/autopilotpattern/logstash:latest.svg)](https://imagelayers.io/?images=autopilotpattern/logstash:latest)
+- [Kibana](https://github.com/autopilotpattern/elk/tree/master/kibana): [![DockerPulls](https://img.shields.io/docker/pulls/autopilotpattern/kibana.svg)](https://registry.hub.docker.com/u/autopilotpattern/kibana/)
+[![DockerStars](https://img.shields.io/docker/stars/autopilotpattern/kibana.svg)](https://registry.hub.docker.com/u/autopilotpattern/kibana/)
+[![ImageLayers](https://badge.imagelayers.io/autopilotpattern/kibana:latest.svg)](https://imagelayers.io/?images=autopilotpattern/kibana:latest)
+- Chat: [![Join the chat at https://gitter.im/autopilotpattern/general](https://badges.gitter.im/autopilotpattern/general.svg)](https://gitter.im/autopilotpattern/general)
 
 This repo is a demonstration of the [Elasticsearch-Logstash-Kibana (ELK)](https://www.elastic.co/products) stack, designed to be self-operating according to the [autopilot pattern](http://autopilotpattern.io/). This application also demonstrates Triton support of Docker log drivers.
 
