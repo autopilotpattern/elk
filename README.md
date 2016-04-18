@@ -6,7 +6,7 @@ Autopilot Pattern ELK
 [![DockerPulls](https://img.shields.io/docker/pulls/autopilotpattern/mysql.svg)](https://registry.hub.docker.com/u/autopilotpattern/mysql/)
 [![DockerStars](https://img.shields.io/docker/stars/autopilotpattern/mysql.svg)](https://registry.hub.docker.com/u/autopilotpattern/mysql/)
 [![ImageLayers](https://badge.imagelayers.io/autopilotpattern/mysql:latest.svg)](https://imagelayers.io/?images=autopilotpattern/mysql:latest)
-[![Join the chat at https://gitter.im/autopilotpattern/mysql](https://badges.gitter.im/autopilotpattern/mysql.svg)](https://gitter.im/autopilotpattern/mysql)
+[![Join the chat at https://gitter.im/autopilotpattern/general](https://badges.gitter.im/autopilotpattern/general.svg)](https://gitter.im/autopilotpattern/general)
 
 This repo is a demonstration of the [Elasticsearch-Logstash-Kibana (ELK)](https://www.elastic.co/products) stack, designed to be self-operating according to the [autopilot pattern](http://autopilotpattern.io/). This application also demonstrates Triton support of Docker log drivers.
 
