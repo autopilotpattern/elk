@@ -1,7 +1,7 @@
 Autopilot Pattern ELK
 ==========
 
-*[Autopilot pattern](http://autopilotpattern.io/) implementation of ELK*
+*[Autopilot Pattern](http://autopilotpattern.io/) implementation of ELK*
 
 - [Elasticsearch](https://github.com/autopilotpattern/elasticsearch): [![DockerPulls](https://img.shields.io/docker/pulls/autopilotpattern/elasticsearch.svg)](https://registry.hub.docker.com/u/autopilotpattern/elasticsearch/)
 [![DockerStars](https://img.shields.io/docker/stars/autopilotpattern/elasticsearch.svg)](https://registry.hub.docker.com/u/autopilotpattern/elasticsearch/)
