@@ -1,6 +1,6 @@
 {
   "consul": "{{ .CONSUL }}:8500",
-  "onStart": "/bin/onStart.sh",
+  "onStart": "/usr/local/bin/onStart.sh",
   "services": [
     {
       "name": "logstash",
@@ -14,7 +14,7 @@
     {
       "name": "elasticsearch",
       "poll": 5,
-      "onChange": "/bin/onStart.sh"
+      "onChange": "/usr/local/bin/onStart.sh"
     }
   ]
 }

@@ -22,15 +22,15 @@ The components of this stack are:
 - [Logstash](https://www.elastic.co/products/logstash), to ingest logs from our containers and write them to Elasticsearch.
 - [Kibana](https://www.elastic.co/products/kibana), as a web UI to search the logs we store in Elasticsearch.
 - [Consul](https://www.consul.io/), acting a service catalog to support discovery
-- [Containerbuddy](http://containerbuddy.io), to help with service discovery and bootstrap orchestration
+- [ContainerPilot](https://github.com/joyent/containerpilot), to help with service discovery and bootstrap orchestration
 - [Triton](https://www.joyent.com/), Joyent's container-native infrastructure platform.
 - [Nginx](https://www.nginx.com/), acting as a source of logs for testing.
 
 ![Diagram of Triton-ELK architecture](./doc/triton-elk.png)
 
-The ELK stack components all have configuration files that expect hard-coded IP addresses for their dependencies; Kibana and Logstash need an IP for Elasticsearch and Elasticsearch nodes need the IP of one other node to bootstrap clustering. Each container has a startup script configured as a Containerbuddy `onStart` handler to update the config file prior to starting the main application.
+The ELK stack components all have configuration files that expect hard-coded IP addresses for their dependencies; Kibana and Logstash need an IP for Elasticsearch and Elasticsearch nodes need the IP of one other node to bootstrap clustering. Each container has a startup script configured as a ContainerPilot `preStart` handler to update the config file prior to starting the main application.
 
-Additionally, the ELK application expects certain indexes to be created in Elasticsearch. When the Kibana application starts, the `onStart` handler script (`manage.sh`) will write these indexes to Elasticsearch and will send a log entry to Logstash so that the Logstash application can create its initial schema.
+Additionally, the ELK application expects certain indexes to be created in Elasticsearch. When the Kibana application starts, the `preStart` handler script (`manage.sh`) will write these indexes to Elasticsearch and will send a log entry to Logstash so that the Logstash application can create its initial schema.
 
 ### Getting started
 
@@ -68,15 +68,15 @@ elk_consul_1                 /bin/start -server    Up   53/tcp, 53/udp,
                                                         8301/udp, 8302/tcp,
                                                         8302/udp, 8400/tcp,
                                                         0.0.0.0:8500->8500/tcp
-elk_elasticsearch_1          /bin/containerbuddy   Up   9200/tcp, 9300/tcp
+elk_elasticsearch_1          /bin/containerpilot   Up   9200/tcp, 9300/tcp
                              /usr/share/elastic...
-elk_elasticsearch_data_1     /bin/containerbuddy   Up   9200/tcp, 9300/tcp
+elk_elasticsearch_data_1     /bin/containerpilot   Up   9200/tcp, 9300/tcp
                              /usr/share/elastic...
-elk_elasticsearch_master_1   /bin/containerbuddy   Up   9200/tcp, 9300/tcp
+elk_elasticsearch_master_1   /bin/containerpilot   Up   9200/tcp, 9300/tcp
                              /usr/share/elastic...
-elk_kibana_1                 /bin/containerbuddy   Up   0.0.0.0:5601->5601/tcp
+elk_kibana_1                 /bin/containerpilot   Up   0.0.0.0:5601->5601/tcp
                              /usr/share/kibana...
-elk_logstash_1               /bin/containerbuddy   Up   0.0.0.0:12201->12201/tcp,
+elk_logstash_1               /bin/containerpilot   Up   0.0.0.0:12201->12201/tcp,
                              /usr/share/logstas...      0.0.0.0:12201->12201/udp
                                                         24224/tcp,
                                                         0.0.0.0:514->514/tcp,
@@ -102,8 +102,8 @@ This repo also includes a Docker Compose file for starting Nginx containers that
 ```sh
 $ ./test.sh -p elk test syslog
 Starting Nginx log source...
-Pulling nginx_syslog (autopilotpattern/nginx:latest)...
-latest: Pulling from autopilotpattern/nginx
+Pulling nginx_syslog (autopilotpattern/nginx-elk-demo:latest)...
+latest: Pulling from autopilotpattern/nginx-elk-demo
 ...
 Creating elk_nginx_syslog_1
 Waiting for Nginx to register as healthy...

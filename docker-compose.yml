@@ -16,9 +16,9 @@ kibana:
     environment:
       - CONFIG_PATH=/usr/share/kibana/config/kibana.yml
       - NODE_ENV=production
-      - CONTAINERBUDDY=file:///etc/containerbuddy.json
+      - CONTAINERPILOT=file:///etc/containerpilot.json
     command: >
-      /bin/containerbuddy
+      /usr/local/bin/containerpilot
       /usr/share/kibana/node/bin/node
       /usr/share/kibana/src/cli
 
@@ -42,9 +42,9 @@ logstash:
     # - "24224"     # fluentd tcp port
     env_file: _env
     environment:
-      - CONTAINERBUDDY=file:///etc/containerbuddy.json
+      - CONTAINERPILOT=file:///etc/containerpilot.json
     command: >
-      /bin/containerbuddy
+      /usr/local/bin/containerpilot
       /opt/logstash/bin/logstash -f /etc/logstash/conf.d/logstash.conf
 
 # ---------------------------------------------------
@@ -66,7 +66,7 @@ elasticsearch:
       - ES_HEAP_SIZE=1g # set to 50% of mem_limit, but no more than 31g
       - ES_NODE_MASTER=true # default
       - ES_NODE_DATA=true   # default
-      - CONTAINERBUDDY=file:///etc/containerbuddy.json
+      - CONTAINERPILOT=file:///etc/containerpilot.json
 
       # set the number of threads we want based on the number of CPU shares
       # that we'll get for this size container on Triton
@@ -75,7 +75,7 @@ elasticsearch:
       # ES_DIRECT_SIZE  # optional override
 
     command: >
-      /bin/containerbuddy
+      /usr/local/bin/containerpilot
       /usr/share/elasticsearch/bin/elasticsearch
       --default.path.conf=/etc/elasticsearch
 
