@@ -19,15 +19,17 @@ RUN export PKG=kibana-4.4.1-linux-x64.tar.gz \
 
 EXPOSE 5601
 
-# get Containerbuddy release
-ENV CONTAINERBUDDY_VERSION 1.2.1
-RUN export CB_SHA1=aca04b3c6d6ed66294241211237012a23f8b4f20 \
-    && curl -Lso /tmp/containerbuddy.tar.gz \
-         "https://github.com/joyent/containerbuddy/releases/download/${CONTAINERBUDDY_VERSION}/containerbuddy-${CONTAINERBUDDY_VERSION}.tar.gz" \
-    && echo "${CB_SHA1}  /tmp/containerbuddy.tar.gz" | sha1sum -c \
-    && tar zxf /tmp/containerbuddy.tar.gz -C /bin \
-    && rm /tmp/containerbuddy.tar.gz
+# Add ContainerPilot and set its configuration
+ENV CONTAINERPILOT_VER 2.1.0
+ENV CONTAINERPILOT file:///etc/containerpilot.json
+
+RUN export CONTAINERPILOT_CHECKSUM=e7973bf036690b520b450c3a3e121fc7cd26f1a2 \
+    && curl -Lso /tmp/containerpilot.tar.gz \
+         "https://github.com/joyent/containerpilot/releases/download/${CONTAINERPILOT_VER}/containerpilot-${CONTAINERPILOT_VER}.tar.gz" \
+    && echo "${CONTAINERPILOT_CHECKSUM}  /tmp/containerpilot.tar.gz" | sha1sum -c \
+    && tar zxf /tmp/containerpilot.tar.gz -C /usr/local/bin \
+    && rm /tmp/containerpilot.tar.gz
 
 # Add our configuration files and scripts
-ADD containerbuddy.json /etc/containerbuddy.json
-ADD manage.sh /bin/manage.sh
+ADD containerpilot.json /etc/containerpilot.json
+ADD manage.sh /usr/local/bin/manage.sh

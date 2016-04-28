@@ -1,11 +1,11 @@
 {
   "consul": "{{ .CONSUL }}:8500",
-  "onStart": ["/bin/manage.sh", "onStart"],
+  "onStart": ["/usr/local/bin/manage.sh", "onStart"],
   "services": [
     {
       "name": "kibana",
       "port": 5601,
-      "health": ["/bin/manage.sh", "health"],
+      "health": ["/usr/local/bin/manage.sh", "health"],
       "poll": 10,
       "ttl": 25
     }
@@ -14,7 +14,7 @@
     {
       "name": "elasticsearch",
       "poll": 5,
-      "onChange": ["/bin/manage.sh", "reload"]
+      "onChange": ["/usr/local/bin/manage.sh", "reload"]
     }
   ]
 }

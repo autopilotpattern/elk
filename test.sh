@@ -87,11 +87,10 @@ test() {
            --restart=always \
            --log-driver=${logtype} \
            --log-opt ${logtype}-address=${protocol}://${logstash} \
+           --link ${COMPOSE_PROJECT_NAME}_consul_1:consul \
            -e CONSUL="${consul}" \
-           -e CONTAINERBUDDY="$(cat ./nginx/containerbuddy.json)" \
-           -e NGINX_CONF="$(cat ./nginx/nginx.conf)" \
-           autopilotpattern/nginx \
-           /opt/containerbuddy/containerbuddy nginx -g "daemon off;"
+           -e BACKEND=none \
+           autopilotpattern/nginx
 
     poll-for-page "http://$(getPublicUrl nginx-$logtype 80)" \
                   'Waiting for Nginx to register as healthy...' \
