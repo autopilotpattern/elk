@@ -48,18 +48,13 @@ http {
             deny all;
         }
 
-        location / {
-            root /usr/share/nginx/html;
-            index index.html index.htm;
-        }
-
         {{ if service "kibana" }}
-        location /kibana {
-            # strip '/kibana' from the request before passing
-            # it along to the Kibana upstream
-            rewrite ^/kibana(/.*)$ $1 break;
+        location / {
             proxy_pass http://backend;
             proxy_redirect off;
-        }{{ end }}
+        }{{ else }}location / {
+            root /usr/share/nginx/html;
+            index index.html index.htm;
+        }{{end}}
     }
 }
