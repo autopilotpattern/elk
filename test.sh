@@ -78,7 +78,6 @@ test() {
 
     echo 'Starting Nginx log source...'
 
-    local consul=$(getPrivateIpPort consul 8500 tcp)
     local logstash=$(getPrivateIpPort logstash $port $protocol)
 
     docker run -d -m 128m -p 80 \
@@ -88,11 +87,11 @@ test() {
            --log-driver=${logtype} \
            --log-opt ${logtype}-address=${protocol}://${logstash} \
            --link ${COMPOSE_PROJECT_NAME}_consul_1:consul \
-           -e CONSUL="${consul}" \
-           -e BACKEND=none \
-           autopilotpattern/nginx
+           -e CONSUL=consul \
+           -e BACKEND=kibana \
+           autopilotpattern/elk-nginx-demo
 
-    poll-for-page "http://$(getPublicUrl nginx-$logtype 80)" \
+    poll-for-page "http://$(getPublicUrl nginx-${logtype} 80)" \
                   'Waiting for Nginx to register as healthy...' \
                   'Opening web page.'
 }

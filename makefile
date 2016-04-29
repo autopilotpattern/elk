@@ -10,12 +10,15 @@ PHONY: *
 
 build:
 	docker-compose -f local-compose.yml -p elk build kibana logstash
+	cd nginx && docker build -t="elk_nginx_demo" .
 
 ship:
 	docker tag -f elk_kibana autopilotpattern/kibana
 	docker tag -f elk_logstash autopilotpattern/logstash
+	docker tag -f elk_nginx_demo autopilotpattern/elk-nginx-demo
 	docker push autopilotpattern/kibana
 	docker push autopilotpattern/logstash
+	docker push autopilotpattern/elk-nginx-demo
 
 
 # -------------------------------------------
