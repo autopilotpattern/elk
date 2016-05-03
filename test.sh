@@ -220,21 +220,21 @@ poll-for-page() {
     echo "$3"
     if which xdg-open &>/dev/null; then
             # A *nix machine that supplies xdg-open
-            BROWSER_COMMAND=xdg-open
+            browser_command=xdg-open
     elif which x-www-browser &>/dev/null; then
             # A *nix machine with alternatives system
-            BROWSER_COMMAND=x-www-browser
+            browser_command=x-www-browser
     elif which open &>/dev/null && ! ls -l $(which open) | grep openvt &> /dev/null; then
             # "open" exists and isn't a symlink to openvt, so hopefully 
             # it is the Apple OS X "open" utility. 
-            BROWSER_COMMAND=open
+            browser_command=open
     else
             # Fall back to echoing URL to terminal 
-            BROWSER_COMMAND=echo
+            browser_command=echo
             echo -n 'Web interface available at: '
     fi
 
-    $BROWSER_COMMAND "$1"
+    $browser_command "$1"
 
 }
 
