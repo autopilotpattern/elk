@@ -217,7 +217,7 @@ poll-for-page() {
     echo
 
 
-    echo $3
+    echo "$3"
     if which xdg-open &>/dev/null; then
             # A *nix machine that supplies xdg-open
             BROWSER_COMMAND=xdg-open
@@ -234,7 +234,7 @@ poll-for-page() {
             echo -n 'Web interface available at: '
     fi
 
-    $BROWSER_COMMAND $1
+    $BROWSER_COMMAND "$1"
 
 }
 
